@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "model.py", line 32, in <module>
+    cnnlstm = CNNLSTM(config['lstm_hidden_size'], config['lstm_num_layers']).to(device)
+NameError: name 'CNNLSTM' is not defined

@@ -1,0 +1,4 @@
+name: cv
+channels:
+  - defaults
+prefix: /home/kayne/anaconda3/envs/cv/envs/cv

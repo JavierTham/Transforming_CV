@@ -1,0 +1,2 @@
+prediction: tensor([103,  65, 107, 100, 142], device='cuda:0')
+actual class: tensor([147, 127,  11,  15, 150], device='cuda:0')
