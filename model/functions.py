@@ -8,67 +8,33 @@ from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 import cv2
+import numpy as np
 
 ## ---------------------- Dataloader ---------------------- ##
 class VideoDataset(Dataset):
     """
-    df - dataframe of path to each video and their labels
+    df - dataframe of path to each video frames and their labels
     """
-    
-    def __init__(self, df, seq_len=100):
+
+    def __init__(self, df):
         super(VideoDataset, self).__init__()
         self.df = df
-        self.seq_len = seq_len
-        self.transform = self.get_transforms()
-    
-    def get_transforms(self):
-        "for MobileNetv2" 
-        return transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ])
         
     def __getitem__(self, idx):
         '''
         adapted from bleedai
         '''
         
-        frames_list = []
-        video_classes = []
-        
-        video_path = self.df.iloc[idx, 0]
-        video_reader = cv2.VideoCapture(video_path)
+        frames_path = self.df.iloc[idx, 0]
         video_class = self.df.iloc[idx, 1]
         
-        video_classes.append(video_class)
-        
-        # Get the total number of frames in the video.
-        video_frames_count = int(video_reader.get(cv2.CAP_PROP_FRAME_COUNT))
-
-        # Calculate the the interval after which frames will be added to the list.
-        skip_frames_window = max(int(video_frames_count / self.seq_len), 1)
-
-        for frame_counter in range(self.seq_len):
-            # Set the current frame position of the video, loop video if video too short
-            frame_position = frame_counter * skip_frames_window % video_frames_count 
-            video_reader.set(cv2.CAP_PROP_POS_FRAMES, frame_position)
-            success, frame = video_reader.read() 
-
-            if not success:
-                break
-
-            processed_frame = self.transform(Image.fromarray(frame))
-            frames_list.append(processed_frame)
-
-        video_reader.release()
-        
+        frames = np.load(frames_path)
+        frames = torch.Tensor(frames['arr_0']) # each compressed .npz file only has 1 "arr_0.npy" file
 
         ### FOR TESTING PURPOSES ###
-        print(video_path)
+        print(frames_path)
             
-        return torch.stack(frames_list), video_classes[0]
+        return frames, video_class
     
     def __len__(self):
         return len(self.df)
@@ -80,22 +46,20 @@ class CNNLSTM(nn.Module):
     
     @params
     ---
-    freeze_layers: freeze the cnn model parameters from 0:freeze_layers
     lstm_hidden_size: hidden size for the lstm model
     lstm_num_layers: number of layers for the lstm model
     """
     
-    def __init__(self, batch_size, freeze_layers, lstm_hidden_size, lstm_num_layers):
+    def __init__(self, batch_size, lstm_hidden_size, lstm_num_layers):
         super(CNNLSTM, self).__init__()
         self.cnn = torchvision.models.MobileNetV2().features
         self.lstm = nn.LSTM(1280*7*7, lstm_hidden_size, lstm_num_layers, batch_first=True)
         self.fc = nn.Linear(lstm_hidden_size, 157)
         self.batch_size = batch_size
         
-        for param in self.cnn[:freeze_layers].parameters():
+        for param in self.cnn.parameters():
             param.requires_grad = False
                 
-       
     def forward(self, x):
         # batch_size, sequence_length, num_channels, height, width
         B, L, C, H, W = x.size()

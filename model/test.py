@@ -18,6 +18,6 @@ print(df.head())
 
 dataset = VideoDataset(df)
 for i, data in enumerate(dataset):
-	print("Size/shape of frames:", data[0]['arr_0'].shape) # each compressed .npz file only has 1 "arr_0.npy" file
+	print("Size/shape of frames:", data[0].shape) # each compressed .npz file only has 1 "arr_0.npy" file
 	print("Class:", data[1])
 	break
