@@ -21,15 +21,12 @@ class VideoDataset(Dataset):
         self.df = df
         
     def __getitem__(self, idx):
-        '''
-        adapted from bleedai
-        '''
-        
         frames_path = self.df.iloc[idx, 0]
         video_class = self.df.iloc[idx, 1]
         
         frames = np.load(frames_path)
-        frames = torch.Tensor(frames['arr_0']) # each compressed .npz file only has 1 "arr_0.npy" file
+        frames = np.transpose(frames['arr_0'], (0, 3, 1, 2)) # each compressed .npz file only has 1 "arr_0.npy" file
+        frames = torch.Tensor(frames)
 
         ### FOR TESTING PURPOSES ###
         # print(type(video_class))
@@ -50,12 +47,19 @@ class CNNLSTM(nn.Module):
     lstm_num_layers: number of layers for the lstm model
     """
     
-    def __init__(self, batch_size, lstm_hidden_size, lstm_num_layers):
+    def __init__(self, lstm_hidden_size, lstm_num_layers):
         super(CNNLSTM, self).__init__()
         self.cnn = torchvision.models.MobileNetV2().features
-        self.lstm = nn.LSTM(1280*7*7, lstm_hidden_size, lstm_num_layers, batch_first=True)
+
+        # output of MobileNetv2 feature layer (1280, 7, 7)
+        self.lstm = nn.LSTM(
+            1280*7*7,
+            lstm_hidden_size,
+            lstm_num_layers,
+            batch_first=True)
+
+        # 157 classes
         self.fc = nn.Linear(lstm_hidden_size, 157)
-        self.batch_size = batch_size
         
         for param in self.cnn.parameters():
             param.requires_grad = False
@@ -70,7 +74,7 @@ class CNNLSTM(nn.Module):
         x = x.view(B, L, x.size(-1))
         # LSTM
         x, (hn, cn) = self.lstm(x)
-        x = x[:, -1, :].view(self.batch_size, -1)
+        x = x[:, -1, :].view(x.size(0), -1)
         # FC
         x = self.fc(x)
         
