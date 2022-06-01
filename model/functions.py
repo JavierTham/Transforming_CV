@@ -17,8 +17,6 @@ def train(model, device, train_loader, criterion, optimizer, epoch):
         
         optimizer.zero_grad()
         output = model(X)
-
-        print(output.size())
         
         loss = criterion(output, y)
         losses.append(loss.item())
@@ -52,7 +50,7 @@ def validation(model, device, test_loader, criterion, optimizer, epoch):
 
             output = model(X)
 
-            loss = criterion(output, y, reduction='sum')
+            loss = criterion(output, y)
             test_loss += loss.item()                 # sum up batch loss
             y_pred = output.max(1, keepdim=True)[1]  # (y_pred != output) get the index of the max log-probability
 
@@ -68,13 +66,12 @@ def validation(model, device, test_loader, criterion, optimizer, epoch):
     test_score = accuracy_score(all_y.cpu().data.squeeze().numpy(), all_y_pred.cpu().data.squeeze().numpy())
 
     # show information
-    print('\nTest set ({:d} samples): Average loss: {:.4f}, Accuracy: {:.2f}%\n'.format(len(all_y), test_loss, 100 * test_score))
+    print(f'\nValidation set ({len(all_y)} samples): Average loss: {test_loss:.4f}, Accuracy: {100 * test_score:.2f}%\n')
 
     # save Pytorch models of best record
-    # torch.save(cnn_encoder.state_dict(), os.path.join(save_model_path, 'cnn_encoder_epoch{}.pth'.format(epoch + 1)))  # save spatial_encoder
-    # torch.save(rnn_decoder.state_dict(), os.path.join(save_model_path, 'rnn_decoder_epoch{}.pth'.format(epoch + 1)))  # save motion_encoder
-    # torch.save(optimizer.state_dict(), os.path.join(save_model_path, 'optimizer_epoch{}.pth'.format(epoch + 1)))      # save optimizer
-    # print("Epoch {} model saved!".format(epoch + 1))
+    torch.save(model.state_dict(), f'cnnlstm_epoch{epoch + 1}.pth')
+    torch.save(optimizer.state_dict(), f'optimizer_epoch{epoch + 1}.pth')      # save optimizer
+    print(f"Epoch {epoch + 1} model saved!")
 
     return test_loss, test_score
 
@@ -90,9 +87,3 @@ def predict(model, device, loader):
             all_y_pred.extend(y_pred.cpu().data.squeeze().numpy().tolist())
 
     return all_y_pred
-
-def get_df(train_data_path, frames_path):
-    df = pd.read_csv(train_data_path)
-    df = df.loc[:, ["id", "vid_class"]]
-    df['id'] = df.loc[:, 'id'].apply(lambda x: os.path.join(frames_path, f"{x}.npz"))
-    return df
