@@ -1,7 +1,8 @@
 import pandas as pd
+import os
 import torch
-from functions import *
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
 
 def train(model, device, train_loader, criterion, optimizer, epoch):
     model.train()
@@ -16,6 +17,8 @@ def train(model, device, train_loader, criterion, optimizer, epoch):
         
         optimizer.zero_grad()
         output = model(X)
+
+        print(output.size())
         
         loss = criterion(output, y)
         losses.append(loss.item())
@@ -28,8 +31,8 @@ def train(model, device, train_loader, criterion, optimizer, epoch):
         optimizer.step()
 
         if (batch_idx + 1) % 10 == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}, Accu: {:.2f}%'.format(
-                epoch + 1, N_count, len(train_loader), 100. * (batch_idx + 1) / len(train_loader), loss.item(), 100 * step_score))
+            print(f'Train Epoch: {epoch + 1} [{N_count}/{len(train_loader)} ({100. * (batch_idx + 1) / len(train_loader)})]\
+                \tLoss: {loss.item():.6f}, Accu: {100 * step_score:.2f}')
         
         ### FOR TESTING PURPOSES ###
         print("prediction:", y_pred)
@@ -37,7 +40,7 @@ def train(model, device, train_loader, criterion, optimizer, epoch):
         
     return losses, scores
 
-def validation(model, device, optimizer, test_loader):
+def validation(model, device, test_loader, criterion, optimizer, epoch):
     model.eval()
 
     test_loss = 0
