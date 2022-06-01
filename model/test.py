@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import torch
 from functions import *
 
 train_data_path = "../data/train_data.csv"
@@ -17,7 +18,19 @@ df = get_df(train_data_path, frames_path)
 print(df.head())
 
 dataset = VideoDataset(df)
-for i, data in enumerate(dataset):
-	print("Size/shape of frames:", data[0].shape) # each compressed .npz file only has 1 "arr_0.npy" file
-	print("Class:", data[1])
+for data in dataset:
+	X, y = data[0], data[1]
+	print("Size/shape of frames:", X.shape)
+	print("Class:", y)
+	break
+
+use_cuda = torch.cuda.is_available()    
+device = torch.device("cuda" if use_cuda else "cpu")
+for data in dataset:
+	X, y = data[0], data[1]
+	print("X type:", type(X))
+	print("y type:", type(y))
+	X, y = X.to(device), y.to(device)
+	print("X device:", X.device)
+	print("y device:", y.device)
 	break

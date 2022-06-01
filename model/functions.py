@@ -32,9 +32,9 @@ class VideoDataset(Dataset):
         frames = torch.Tensor(frames['arr_0']) # each compressed .npz file only has 1 "arr_0.npy" file
 
         ### FOR TESTING PURPOSES ###
-        print(frames_path)
+        # print(type(video_class))
             
-        return frames, video_class
+        return frames, torch.tensor(video_class)
     
     def __len__(self):
         return len(self.df)
