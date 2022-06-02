@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import torchvision
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
 ## ---------------------- Dataloader ---------------------- ##
@@ -72,6 +73,7 @@ class CNNLSTM(nn.Module):
         # LSTM
         x, (hn, cn) = self.lstm(x)
         x = x[:, -1, :].view(x.size(0), -1)
+        x = F.relu(x)
         # FC
         x = self.fc(x)
         
