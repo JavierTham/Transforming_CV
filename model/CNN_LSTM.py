@@ -11,13 +11,14 @@ class VideoDataset(Dataset):
     df - dataframe of path to each video frames and their labels
     """
 
-    def __init__(self, df):
+    def __init__(self, frames_paths, video_classes):
         super(VideoDataset, self).__init__()
-        self.df = df
+        self.frames_paths = frames_paths
+        self.video_classes = video_classes
         
     def __getitem__(self, idx):
-        frames_path = self.df.iloc[idx, 0]
-        video_class = self.df.iloc[idx, 1]
+        frames_path = self.frames_paths[idx]
+        video_class = self.video_classes[idx]
         
         frames = np.load(frames_path)
         frames = np.transpose(frames['arr_0'], (0, 3, 1, 2)) # each compressed .npz file only has 1 "arr_0.npy" file
@@ -29,7 +30,7 @@ class VideoDataset(Dataset):
         return frames, torch.tensor(video_class)
     
     def __len__(self):
-        return len(self.df)
+        return len(self.frames_paths)
 
 
 class CNNLSTM(nn.Module):
@@ -45,10 +46,10 @@ class CNNLSTM(nn.Module):
     def __init__(self, lstm_hidden_size, lstm_num_layers):
         super(CNNLSTM, self).__init__()
         self.cnn = torchvision.models.MobileNetV2().features
-
         # output of MobileNetv2 feature layer (1280, 7, 7)
+        self.AvgPool2d = nn.AvgPool2d(7)
         self.lstm = nn.LSTM(
-            1280*7*7,
+            1280,
             lstm_hidden_size,
             lstm_num_layers,
             batch_first=True)
@@ -65,6 +66,7 @@ class CNNLSTM(nn.Module):
         x = x.view(B * L, C, H, W)
         # CNN
         x = self.cnn(x)
+        x = self.AvgPool2d(x)
         x = x.view(x.size(0), -1)    # x.size(0): B*L
         x = x.view(B, L, x.size(-1))
         # LSTM
