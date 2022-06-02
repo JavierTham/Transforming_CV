@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "model.py", line 5, in <module>
-    train_data_path = os.path.join(data_path, "train_data.csv")
-NameError: name 'os' is not defined
