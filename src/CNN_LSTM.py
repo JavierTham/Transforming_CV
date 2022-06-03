@@ -21,6 +21,8 @@ class VideoDataset(Dataset):
         frames_path = self.frames_paths[idx]
         video_class = self.video_classes[idx]
         
+        print(frames_path)
+
         frames = np.load(frames_path)
         frames = np.transpose(frames['arr_0'], (0, 3, 1, 2)) # each compressed .npz file only has 1 "arr_0.npy" file
         frames = torch.Tensor(frames)
@@ -73,7 +75,8 @@ class CNNLSTM(nn.Module):
         # LSTM
         x, (hn, cn) = self.lstm(x)
         x = x[:, -1, :].view(x.size(0), -1)
-        x = F.relu(x)
+        # x = F.relu(x)
+        x = torch.sigmoid(x)
         # FC
         x = self.fc(x)
         

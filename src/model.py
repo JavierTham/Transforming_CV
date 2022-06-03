@@ -5,16 +5,16 @@ from CNN_LSTM import *
 import wandb
 
 config = {
-    "learning_rate": 1e-05,
-    "epochs": 10,
+    "learning_rate": 1e-06,
+    "epochs": 1,
     "batch_size": 16,
     "sequence_len": 50,
     "num_workers": 4,
-    "lstm_hidden_size": 20, # for benchmarking
+    "lstm_hidden_size": 256, # for benchmarking
     "lstm_num_layers": 1   # for benchmarking
 }
 
-wandb.init(project="Transforming_CV", entity="javiertham", config=config)
+# wandb.init(project="Transforming_CV", entity="javiertham", config=config)
 
 data_path = "../data/"
 train_data_path = os.path.join(data_path, "train_data.csv")
@@ -53,6 +53,6 @@ for epoch in range(config['epochs']):
 	losses, scores = train(cnnlstm, device, train_dataloader, criterion, optimizer, epoch)
 	epoch_test_loss, epoch_test_score = validation(cnnlstm, device, val_dataloader, val_criterion, optimizer, epoch)
 
-	wandb.log({"epoch_test_loss": epoch_test_loss, "epoch_test_score": epoch_test_score})
+	# wandb.log({"epoch_test_loss": epoch_test_loss, "epoch_test_score": epoch_test_score})
 
-wandb.finish()
+# wandb.finish()
