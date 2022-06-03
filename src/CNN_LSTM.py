@@ -20,8 +20,6 @@ class VideoDataset(Dataset):
     def __getitem__(self, idx):
         frames_path = self.frames_paths[idx]
         video_class = self.video_classes[idx]
-        
-        print(frames_path)
 
         frames = np.load(frames_path)
         frames = np.transpose(frames['arr_0'], (0, 3, 1, 2)) # each compressed .npz file only has 1 "arr_0.npy" file
@@ -57,8 +55,9 @@ class CNNLSTM(nn.Module):
             lstm_num_layers,
             batch_first=True)
 
+        self.fc1 = nn.Linear(lstm_hidden_size, 256)
         # 157 classes
-        self.fc = nn.Linear(lstm_hidden_size, 157)
+        self.fc2 = nn.Linear(256, 157)
         
         for param in self.cnn.parameters():
             param.requires_grad = False
@@ -75,10 +74,11 @@ class CNNLSTM(nn.Module):
         # LSTM
         x, (hn, cn) = self.lstm(x)
         x = x[:, -1, :].view(x.size(0), -1)
-        # x = F.relu(x)
-        x = torch.sigmoid(x)
+        x = self.fc1(x)
+        x = F.relu(x)
+        # x = torch.sigmoid(x)
         # FC
-        x = self.fc(x)
+        x = self.fc2(x)
         
         return x
 
