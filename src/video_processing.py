@@ -41,6 +41,7 @@ def process_video(video_id, video_path, seq_len=50):
             ])
 
             transformed_frame = preprocess(Image.fromarray(frame))
+            transformed_frame = transformed_frame.detach().cpu().numpy()
 
             # plt.imshow(np.array(transformed_frame).transpose(1,2,0))
             # plt.show()
@@ -49,9 +50,9 @@ def process_video(video_id, video_path, seq_len=50):
 
         video_reader.release()
         
-        frames_list = torch.stack(frames_list, dim = 0)
+        frames_list = np.stack(frames_list, axis = 0)
 
-        torch.save(frames_list, f'/media/kayne/SpareDisk/data/video_frames/{video_id}.pt')
+        np.savez_compressed(f"/media/kayne/SpareDisk/data/video_frames/{video_id}.npz", **{video_id: frames_list})
 
 train_data_path = "../data/train_data.csv"
 video_path = "../data/Charades_v1"
@@ -60,6 +61,6 @@ frames_path = "/media/kayne/SpareDisk/data/video_frames/"
 df = pd.read_csv(train_data_path)
 vid_id_list = df.loc[:, 'id'].tolist()
 
-for vid_id in vid_id_list[:2000]:
+for vid_id in vid_id_list[:5]:
     print(vid_id)
     process_video(vid_id, video_path)
