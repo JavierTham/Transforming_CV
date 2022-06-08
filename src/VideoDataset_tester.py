@@ -3,6 +3,7 @@ import numpy as np
 import os
 import torch
 from CNN_LSTM import *
+import matplotlib.pyplot as plt
 
 train_data_path = "../data/train_data.csv"
 video_path = "../data/Charades_v1"
@@ -22,7 +23,10 @@ for data in dataset:
 	print("Class:", y)
 	print("X type:", type(X))
 	print("y type:", type(y))
+
+	plt.imshow(np.array(X[0,:,:,:]).transpose(1,2,0))
+	plt.show()
+
 	X, y = X.to(device), y.to(device)
 	print("X device:", X.device)
 	print("y device:", y.device)
-	break
