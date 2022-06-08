@@ -10,13 +10,12 @@ video_path = "../data/Charades_v1"
 frames_path = "/media/kayne/SpareDisk/data/video_frames/"
 
 df = pd.read_csv(train_data_path).iloc[:1, :]
-frames_paths = list(df['id'].apply(lambda x: os.path.join(frames_path, f"{x}.pt")))
+video_id = df['id'].tolist()
 vid_classes = np.asarray(df['vid_class'])
 
-dataset = VideoDataset(frames_paths, vid_classes)
+dataset = VideoDataset(frames_path, video_id, vid_classes)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-print(frames_paths[0])
 for data in dataset:
 	X, y = data[0], data[1]
 	print("Size/shape of frames:", X.shape)
