@@ -21,12 +21,7 @@ class VideoDataset(Dataset):
         frames_path = self.frames_paths[idx]
         video_class = self.video_classes[idx]
 
-        frames = np.load(frames_path)
-        frames = np.transpose(frames['arr_0'], (0, 3, 1, 2)) # each compressed .npz file only has 1 "arr_0.npy" file
-        frames = torch.Tensor(frames)
-
-        ### FOR TESTING PURPOSES ###
-        # print(type(video_class))
+        frames = torch.load(frames_path)
             
         return frames, torch.tensor(video_class)
     
@@ -106,18 +101,3 @@ class CNNLSTM(nn.Module):
         # x = F.softmax(x, dim=0)
         
         return x
-
-########################################################
-def Conv3d_final_prediction(model, device, loader):
-    model.eval()
-
-    all_y_pred = []
-    with torch.no_grad():
-        for batch_idx, (X, y) in enumerate(tqdm(loader)):
-            # distribute data to device
-            X = X.to(device)
-            output = model(X)
-            y_pred = output.max(1, keepdim=True)[1]  # location of max log-probability as prediction
-            all_y_pred.extend(y_pred.cpu().data.squeeze().numpy().tolist())
-
-    return all_y_pred
