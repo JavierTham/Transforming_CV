@@ -5,7 +5,7 @@ import torch
 from CNN_LSTM import *
 import matplotlib.pyplot as plt
 
-train_data_path = "../data/train_data.csv"
+train_data_path = "../data/train_data2.csv"
 video_path = "../data/Charades_v1"
 frames_path = "/media/kayne/SpareDisk/data/video_frames/"
 
