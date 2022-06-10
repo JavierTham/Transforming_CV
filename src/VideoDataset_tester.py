@@ -9,8 +9,9 @@ train_data_path = "../data/train_data2.csv"
 video_path = "../data/Charades_v1"
 frames_path = "/media/kayne/SpareDisk/data/video_frames/"
 
-df = pd.read_csv(train_data_path).iloc[:1, :]
-video_id = df['id'].tolist()
+num_examples = 1
+df = pd.read_csv(train_data_path).iloc[:num_examples, :]
+video_id = list(range(num_examples))
 vid_classes = np.asarray(df['vid_class'])
 
 dataset = VideoDataset(frames_path, video_id, vid_classes)
