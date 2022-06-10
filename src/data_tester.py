@@ -4,9 +4,9 @@ import re
 import torch
 
 def test_data_class(video_id, video_class):
-	df = pd.read_csv("../data/Charades_v1_train.csv")
-	actions = df[df['id'] == video_id]['actions'].item()
-	print("Correct class!") if bool(re.search(str(video_class), actions)) \
+	df = pd.read_csv("../data/train_data2.csv")
+	action = df.iloc[video_id, -1]
+	print("Correct class!") if action == video_class\
 							else print("Wrong class")
 
 def test_data_shape(frames, seq_len=50, channels=3, height=224, width=224):
