@@ -19,12 +19,8 @@ def process_video(idx, video_id, video_path, start_time, end_time, seq_len=50):
         video_path = os.path.join(video_path, f'{video_id}.mp4')
         video_reader = cv2.VideoCapture(video_path)
 
-        fps = video_reader.get(cv2.CAP_PROP_FPS)
-        frames = video_reader.get(cv2.CAP_PROP_FRAME_COUNT)
-
-        print(start_time, end_time)
-        print(fps)
-        print(frames)
+        fps = int(video_reader.get(cv2.CAP_PROP_FPS))
+        # totat_frames = video_reader.get(cv2.CAP_PROP_FRAME_COUNT)
 
         num_frames = int(end_time - start_time) * fps
         # sample frames with skipping
@@ -33,14 +29,18 @@ def process_video(idx, video_id, video_path, start_time, end_time, seq_len=50):
         frames_list = []
         skip_frames_window = 2
 
-        starting_frame = start_time * fps
+        starting_frame = int(start_time) * fps
         # sample from middle if duration is long enough
         if required_frame_length <= num_frames:
             offset = (num_frames - required_frame_length) / 2
             starting_frame += offset
 
-        print(num_frames)
-        print()
+        # print("TOTAL FRAMES IN VID:", total_frames)
+        # print("fps:", fps)
+        # print("num frames in snippet:", num_frames)
+        # print("starting_frame:", starting_frame)
+        # print("start time", start_time)
+        # print("end_time:", end_time)
 
         for frame_counter in range(seq_len):
             # Set the current frame position of the video, loop video if video too short
@@ -49,11 +49,12 @@ def process_video(idx, video_id, video_path, start_time, end_time, seq_len=50):
             success, frame = video_reader.read()
 
             if not success:
+                print("frame pos:", frame_position)
                 break
 
             # print(frame.shape)
             # plt.imshow(frame)
-            # plt.show() 
+            # plt.show()
 
             transformed_frame = preprocess(Image.fromarray(frame))
             transformed_frame = transformed_frame.detach().cpu().numpy()
@@ -77,8 +78,11 @@ train_data_path = "../data/train_data2.csv"
 video_path = "../data/Charades_v1"
 frames_path = "/media/kayne/SpareDisk/data/video_frames/"
 
-df = pd.read_csv(train_data_path).iloc[100:, :]
+df = pd.read_csv(train_data_path)
+video_id, start_time, end_time = df.loc[33, ["id", "start_time", "end_time"]]
+process_video(33, video_id, video_path, start_time, end_time)
 
-for i in range(len(df)):
-    video_id, start_time, end_time = df.loc[i, ["id", "start_time", "end_time"]]
-    process_video(i, video_id, video_path, start_time, end_time)
+# for i in range(len(df)):
+#     if i >= 8000 and i < 16000:
+#         video_id, start_time, end_time = df.loc[i, ["id", "start_time", "end_time"]]
+#         process_video(i, video_id, video_path, start_time, end_time)
