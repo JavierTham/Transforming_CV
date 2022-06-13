@@ -3,8 +3,10 @@ import pandas as pd
 from PIL import Image
 import cv2
 import os
+import json
 import torch
 from torchvision import transforms
+from tqdm import tqdm
 
 import matplotlib.pyplot as plt
 
@@ -20,7 +22,7 @@ def process_video(idx, video_id, video_path, start_time, end_time, seq_len=50):
         video_reader = cv2.VideoCapture(video_path)
 
         fps = int(video_reader.get(cv2.CAP_PROP_FPS))
-        # totat_frames = video_reader.get(cv2.CAP_PROP_FRAME_COUNT)
+        total_frames = video_reader.get(cv2.CAP_PROP_FRAME_COUNT)
 
         num_frames = int(end_time - start_time) * fps
         # sample frames with skipping
@@ -35,16 +37,24 @@ def process_video(idx, video_id, video_path, start_time, end_time, seq_len=50):
             offset = (num_frames - required_frame_length) / 2
             starting_frame += offset
 
-        # print("TOTAL FRAMES IN VID:", total_frames)
-        # print("fps:", fps)
-        # print("num frames in snippet:", num_frames)
-        # print("starting_frame:", starting_frame)
-        # print("start time", start_time)
-        # print("end_time:", end_time)
+        print("TOTAL FRAMES IN VID:", total_frames)
+        print("fps:", fps)
+        print("num frames in snippet:", num_frames)
+        print("starting_frame:", starting_frame)
+        print("start time", start_time)
+        print("end_time:", end_time)
 
+        # some videos do not have constant fps, might have less frames than (duration*fps)
+        max_frame_counter = 1
         for frame_counter in range(seq_len):
-            # Set the current frame position of the video, loop video if video too short
-            frame_position = (frame_counter * skip_frames_window) % num_frames + starting_frame
+            # Set the current frame position of the video,
+            frame_position = (frame_counter / max_frame_counter * skip_frames_window) % num_frames + starting_frame
+
+            # start from beginning if video too short
+            if frame_position >= total_frames:
+                max_frame_counter = frame_counter
+                frame_position = starting_frame
+
             video_reader.set(cv2.CAP_PROP_POS_FRAMES, frame_position)
             success, frame = video_reader.read()
 
@@ -79,8 +89,15 @@ video_path = "../data/Charades_v1"
 frames_path = "/media/kayne/SpareDisk/data/video_frames/"
 
 df = pd.read_csv(train_data_path)
-video_id, start_time, end_time = df.loc[33, ["id", "start_time", "end_time"]]
-process_video(33, video_id, video_path, start_time, end_time)
+# video_id, start_time, end_time = df.loc[343, ["id", "start_time", "end_time"]]
+# process_video(343, video_id, video_path, start_time, end_time)
+
+with open(f"wrong_data_1.json", "r") as f:
+    wrong_data = json.load(f)
+
+for i, frame_shape in tqdm(wrong_data):
+    video_id, start_time, end_time = df.loc[i, ["id", "start_time", "end_time"]]
+    process_video(i, video_id, video_path, start_time, end_time)
 
 # for i in range(len(df)):
 #     if i >= 8000 and i < 16000:
