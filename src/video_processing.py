@@ -8,7 +8,7 @@ from torchvision import transforms
 
 import matplotlib.pyplot as plt
 
-def process_video(video_id, video_path, start_time, end_time, seq_len=50):
+def process_video(idx, video_id, video_path, start_time, end_time, seq_len=50):
         preprocess = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
@@ -20,8 +20,13 @@ def process_video(video_id, video_path, start_time, end_time, seq_len=50):
         video_reader = cv2.VideoCapture(video_path)
 
         fps = video_reader.get(cv2.CAP_PROP_FPS)
+        frames = video_reader.get(cv2.CAP_PROP_FRAME_COUNT)
 
-        num_frames = round(end_time - start_time) * fps
+        print(start_time, end_time)
+        print(fps)
+        print(frames)
+
+        num_frames = int(end_time - start_time) * fps
         # sample frames with skipping
         required_frame_length = seq_len * 2
 
@@ -33,6 +38,9 @@ def process_video(video_id, video_path, start_time, end_time, seq_len=50):
         if required_frame_length <= num_frames:
             offset = (num_frames - required_frame_length) / 2
             starting_frame += offset
+
+        print(num_frames)
+        print()
 
         for frame_counter in range(seq_len):
             # Set the current frame position of the video, loop video if video too short
@@ -63,14 +71,14 @@ def process_video(video_id, video_path, start_time, end_time, seq_len=50):
         # print(frames_list.shape)
 
         print(video_id)
-        np.savez_compressed(f"/media/kayne/SpareDisk/data/video_frames/{video_id}.npz", **{video_id: frames_list})
+        np.savez_compressed(f"/media/kayne/SpareDisk/data/video_frames/{idx}.npz", **{str(idx): frames_list})
 
 train_data_path = "../data/train_data2.csv"
 video_path = "../data/Charades_v1"
 frames_path = "/media/kayne/SpareDisk/data/video_frames/"
 
-df = pd.read_csv(train_data_path).iloc[:100, :]
+df = pd.read_csv(train_data_path).iloc[100:, :]
 
 for i in range(len(df)):
-    vid_id, start_time, end_time = df.loc[i, ["id", "start_time", "end_time"]]
-    process_video(vid_id, video_path, start_time, end_time)
+    video_id, start_time, end_time = df.loc[i, ["id", "start_time", "end_time"]]
+    process_video(i, video_id, video_path, start_time, end_time)
