@@ -4,6 +4,8 @@ import re
 import os
 import torch
 import matplotlib.pyplot as plt
+import json
+from tqdm import tqdm
 
 frames_path = "/media/kayne/SpareDisk/data/video_frames/"
 
@@ -18,10 +20,9 @@ def test_data_shape(video_id, seq_len=50, channels=3, height=224, width=224):
     path = os.path.join(frames_path, f"{video_id}.npz")
     frames = np.load(path)[f"{video_id}.npy"]
 
-    # print("Frames shape:\n[seq_len, channels, height, width]\n", frames.shape)
     if frames.shape != (seq_len, channels, height, width):
+        # print("Video:", video_id, "Frames shape:\n[seq_len, channels, height, width]\n", frames.shape)
         return (video_id, frames.shape)
-
     return None
 
 def check_data(video_id):
@@ -36,10 +37,13 @@ def check_data(video_id):
         plt.show()
 
 if __name__ == "__main__":
-    num_examples = 16000
+    num_examples = 3000
 
-    wrong_data = []    
-    for video_id in range(num_examples):
-        wrong_data.append(test_data_shape(video_id))
+    wrong_data = []
+    for video_id in tqdm(range(1000, num_examples)):
+        output = test_data_shape(video_id)
+        if output:
+            wrong_data.append(output)
 
-    print(wrong_data)
+    with open(f"wrong_data_1.json", "w") as f:
+        json.dump(wrong_data, f)
