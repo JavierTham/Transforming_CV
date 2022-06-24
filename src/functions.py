@@ -28,13 +28,13 @@ def trainer(model, device, train_loader, criterion, optimizer, epoch):
         step_score = accuracy_score(y_true, y_pred)
         scores.append(step_score)
 
-        top_5_score = top_k_accuracy_score(y_true, output.detach().cpu(), k=5, labels=range(157))
-        top_5.append(top_5_score)
+        # top_5_score = top_k_accuracy_score(y_true, output.detach().cpu(), k=5, labels=range(157))
+        # top_5.append(top_5_score)
         
         loss.backward()
         optimizer.step()
 
-        print(f"Batch {batch_idx} loss:", loss.item(), "\ntop 1 accuracy:", step_score, "\ntop 5 accuracy:", top_5_score)
+        print(f"Batch {batch_idx} loss:", loss.item(), "\ntop 1 accuracy:", step_score) #, "\ntop 5 accuracy:", top_5_score)
         
         if (batch_idx + 1) % 10 == 0:
             wandb.log({"Batch": batch_idx + 1, "Training loss": loss.item(),
@@ -98,7 +98,7 @@ def predict(model, device, loader):
 
     all_y_pred = []
     with torch.no_grad():
-        for batch_idx, (X, y) in enumerate(tqdm(loader)):
+        for batch_idx, (X, y) in enumerate(loader):
             X = X.to(device)
             output = model(X)
             y_pred = output.max(1, keepdim=True)[1]  # location of max log-probability as prediction
