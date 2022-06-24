@@ -1,20 +1,19 @@
-import pandas as pd
-import os
 import torch
+import pickle
 from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import top_k_accuracy_score
 import wandb
 
-def train(model, device, train_loader, criterion, optimizer, epoch):
+def trainer(model, device, train_loader, criterion, optimizer, epoch):
     model.train()
     
     losses = []
     scores = []
-    N_count = 0   # counting total trained sample in one epoch
+    top_5 = []
+
     for batch_idx, data in enumerate(train_loader):
         X, y = data
         X, y = X.to(device), y.to(device)
-        N_count += X.size(0)
         
         optimizer.zero_grad()
         output = model(X)
@@ -23,23 +22,25 @@ def train(model, device, train_loader, criterion, optimizer, epoch):
         losses.append(loss.item())
         
         y_pred = torch.max(output, 1)[1]
-        step_score = accuracy_score(y.cpu().data.squeeze().numpy(), y_pred.cpu().data.squeeze().numpy())
+        y_pred = y_pred.cpu().data.squeeze().numpy()
+        y_true = y.cpu().data.squeeze().numpy()
+
+        step_score = accuracy_score(y_true, y_pred)
         scores.append(step_score)
+
+        top_5_score = top_k_accuracy_score(y_true, output.detach().cpu(), k=5, labels=range(157))
+        top_5.append(top_5_score)
         
         loss.backward()
         optimizer.step()
 
+        print(f"Batch {batch_idx} loss:", loss.item(), "\ntop 1 accuracy:", step_score, "\ntop 5 accuracy:", top_5_score)
+        
         if (batch_idx + 1) % 10 == 0:
-            print(f'Train Epoch: {epoch + 1} [{N_count}/{len(train_loader)} ({100. * (batch_idx + 1) / len(train_loader)})]\
-                \tLoss: {loss.item():.6f}, Accu: {100 * step_score:.2f}')
-        
-        # wandb.log({"loss": loss, "score": step_score})
+            wandb.log({"Batch": batch_idx + 1, "Training loss": loss.item(),
+                        "Training top 1 accuracy": step_score, "Training top 5 accuracy": top_5_score})
 
-        ### FOR TESTING PURPOSES ###
-        print("prediction:", y_pred)
-        print("actual class:", y)
-        
-    return losses, scores
+    return model, losses, scores
 
 def validation(model, device, test_loader, criterion, optimizer, epoch):
     model.eval()
@@ -48,27 +49,39 @@ def validation(model, device, test_loader, criterion, optimizer, epoch):
     all_y = []
     all_y_pred = []
     with torch.no_grad():
-        for X, y in test_loader:
+        for batch_idx, data in enumerate(test_loader):
+            X, y = data
             X, y = X.to(device), y.to(device)
 
             output = model(X)
 
             loss = criterion(output, y)
-            test_loss += loss.item()                 # sum up batch loss
-            y_pred = output.max(1, keepdim=True)[1]  # (y_pred != output) get the index of the max log-probability
+            test_loss += loss.item()                 
+            # y_pred = output.max(1, keepdim=True)[1]
+            y_pred = torch.max(output, 1)[1]
 
             # collect all y and y_pred in all batches
             all_y.extend(y)
             all_y_pred.extend(y_pred)
 
+            print(f"Validation batch {batch_idx} loss:", loss.item())
+
+            if (batch_idx + 1) % 10 == 0:
+                wandb.log({"Batch": batch_idx + 1, "Validation loss": loss.item()})
+
+    # average loss per batch
     test_loss /= len(test_loader)
 
     # compute accuracy
     all_y = torch.stack(all_y, dim=0)
     all_y_pred = torch.stack(all_y_pred, dim=0)
-    test_score = accuracy_score(all_y.cpu().data.squeeze().numpy(), all_y_pred.cpu().data.squeeze().numpy())
+    
+    all_y_true = y.cpu().data.squeeze().numpy()
+    all_y_pred = y_pred.cpu().data.squeeze().numpy()
+    
+    test_score = accuracy_score(all_y_true, all_y_pred)
+    top_5_score = top_k_accuracy_score(all_y_true, output.detach().cpu(), k=5, labels=range(157))
 
-    # show information
     print(f'\nValidation set ({len(all_y)} samples): Average loss: {test_loss:.4f}, Accuracy: {100 * test_score:.2f}')
 
     # save Pytorch models of best record
@@ -76,7 +89,7 @@ def validation(model, device, test_loader, criterion, optimizer, epoch):
     torch.save(optimizer.state_dict(), f'optimizer_epoch{epoch + 1}.pth')      # save optimizer
     print(f"Epoch {epoch + 1} model saved!")
 
-    # wandb.log({"Accuracy": 100 * test_score})
+    wandb.log({"Validation top 1 Accuracy": test_score, "Validation top 5 Accuracy": top_5_score, "Epoch": epoch})
 
     return test_loss, test_score
 
@@ -92,3 +105,8 @@ def predict(model, device, loader):
             all_y_pred.extend(y_pred.cpu().data.squeeze().numpy().tolist())
 
     return all_y_pred
+
+def unpickle(file):
+    with open(file, 'rb') as fo:
+        d = pickle.load(fo, encoding='latin1')
+    return d
