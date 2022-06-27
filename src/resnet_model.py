@@ -9,10 +9,11 @@ import wandb
 TRAIN_DATA_PATH = "/media/kayne/SpareDisk/data/cifar100/train"
 TEST_DATA_PATH = "/media/kayne/SpareDisk/data/cifar100/test"
 META_DATA_PATH = "/media/kayne/SpareDisk/data/cifar100/meta"
+NUM_CLASSES = 100
 
 config = {
-    "learning_rate": 1e-02,
-    "epochs": 10,
+    "learning_rate": 1e-03,
+    "epochs": 5,
     "batch_size": 256,
     "sequence_len": 50,
     "num_workers": 4,
@@ -20,16 +21,17 @@ config = {
     "lstm_num_layers": 1, 
     "drop out:": True
 }
+
+time_now = time.strftime("%D %X")
+wandb.init(project="Transforming_CV", entity="javiertham", config=config, group="cifar", **{"name": "ResNet50" + time_now})
 wandb.config = config
+
 params = {
 	'batch_size': config['batch_size'],
 	'shuffle': True,
 	'num_workers': config['num_workers'],
 	'pin_memory': True
 }
-
-time_now = time.strftime("%D %X")
-wandb.init(project="Transforming_CV", entity="javiertham", config=config, group="resnet", **{"name": time_now})
 
 train_data = unpickle(TRAIN_DATA_PATH)
 test_data = unpickle(TEST_DATA_PATH)
@@ -61,7 +63,7 @@ y_test = test_data["fine_labels"]
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-resnet = Resnet(100).to(device)
+resnet = Resnet(NUM_CLASSES).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(resnet.parameters(), lr=config['learning_rate'])
 # optimizer = torch.optim.SGD(resnet.parameters(), lr=config["learning_rate"], momentum=0.9)

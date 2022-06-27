@@ -3,6 +3,7 @@ from functions import *
 from Resnet import *
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
+import time
 
 TRAIN_DATA_PATH = "/media/kayne/SpareDisk/data/cifar100/train"
 TEST_DATA_PATH = "/media/kayne/SpareDisk/data/cifar100/test"
@@ -20,9 +21,9 @@ config = {
     "drop out:": True
 }
 
-# time_now = time.strftime("%D %X")
-# wandb.init(project="Transforming_CV", entity="javiertham", config=config, group="resnet", **{"name": time_now})
-# wandb.config = config
+time_now = time.strftime("%D %X")
+wandb.init(project="Transforming_CV", entity="javiertham", config=config, group="cifar", **{"name": "ViT" + time_now})
+wandb.config = config
 
 params = {
 	'batch_size': config['batch_size'],
