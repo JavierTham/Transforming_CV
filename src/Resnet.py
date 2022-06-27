@@ -1,5 +1,6 @@
 import torch
-from torchvision import transforms
+import torch.nn as nn
+from torchvision import models, transforms
 from torch.utils.data import Dataset
 
 class CIFARDataset(Dataset):
@@ -21,3 +22,18 @@ class CIFARDataset(Dataset):
     
     def __len__(self):
         return len(self.X_train)
+
+class Resnet(nn.Module):
+    def __init__(self, num_classes):
+        super(Resnet, self).__init__()
+        self.resnet = models.resnet50(pretrained=True)
+        self.num_classes = num_classes
+        
+        # freeze all layers and change last layer
+        self.n_inputs = self.resnet.fc.in_features
+        for param in self.resnet.parameters():
+            param.requires_grad = False
+        self.resnet.fc = nn.Linear(self.n_inputs, self.num_classes)
+
+    def forward(self, x):
+        return self.resnet(x)
