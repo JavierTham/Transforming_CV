@@ -10,10 +10,6 @@ from torch.utils.data import Dataset, DataLoader
 from data_tester import *
 
 class VideoDataset(Dataset):
-    """
-    df - dataframe of path to each video frames and their labels
-    """
-
     def __init__(self, frames_path, video_ids, video_classes):
         super(VideoDataset, self).__init__()
         self.frames_path = frames_path
@@ -49,11 +45,8 @@ class CNNLSTM(nn.Module):
     def __init__(self, lstm_hidden_size, lstm_num_layers):
         super(CNNLSTM, self).__init__()
         self.cnn = torchvision.models.mobilenet_v2(pretrained=True).features
-        # output of MobileNetv2 feature layer (1280, 7, 7)
-
         # cnn = torchvision.models.alexnet(pretrained=True)
         # self.cnn = nn.Sequential(*list(cnn.children())[:-1]) # remove last layer
-        # output of Alexnet 
 
         self.AvgPool2d = nn.AvgPool2d(7)
         self.lstm = nn.LSTM(
@@ -63,14 +56,23 @@ class CNNLSTM(nn.Module):
             lstm_num_layers,
             batch_first=True)
         self.fc1 = nn.Linear(1280, 1280)
-        self.fc2 = nn.Linear(lstm_hidden_size, 256)
+        self.fc2 = nn.Linear(lstm_hidden_size, 512)
         # 157 classes
-        self.fc3 = nn.Linear(256, 157)
+        self.fc3 = nn.Linear(512, 157)
         self.dropout = nn.Dropout(0.2)
         
         # freeze entire CNN
         for param in self.cnn.parameters():
             param.requires_grad = False
+
+        # # initialize weights for lstm
+        # for name, param in self.lstm.named_parameters():
+        #     if 'bias' in name:
+        #          nn.init.constant_(param, 0.0)
+        #     elif 'weight_ih' in name:
+        #          nn.init.kaiming_normal_(param)
+        #     elif 'weight_hh' in name:
+        #          nn.init.orthogonal_(param)
                 
     def forward(self, x):
         # batch_size, sequence_length, num_channels, height, width
@@ -80,7 +82,6 @@ class CNNLSTM(nn.Module):
         for i in range(L):
             #input one frame at a time into the basemodel
             x_t = self.cnn(x[:, i, :, :, :])
-
             x_t = self.AvgPool2d(x_t)
 
             # Flatten the output
@@ -88,13 +89,13 @@ class CNNLSTM(nn.Module):
 
             #make a list of tensors for the given smaples 
             output.append(x_t)
-        
+
         # reshape to (batch_size, sequence_length, output_size)
         x = torch.stack(output, dim=0).transpose_(0, 1)
 
-        # x = self.fc1(x)
-        # x = F.relu(x)
-        # x = self.dropout(x)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout(x)
 
         # LSTM
         x, (hn, cn) = self.lstm(x)
@@ -102,8 +103,8 @@ class CNNLSTM(nn.Module):
         # FC
         x = self.fc2(x)
         x = F.relu(x)
-        # x = torch.sigmoid(x)
+        x = self.dropout(x)
         x = self.fc3(x)
-        # x = F.softmax(x, dim=0)
+        x = F.softmax(x, dim=0)
         
         return x

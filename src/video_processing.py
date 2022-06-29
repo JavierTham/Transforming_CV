@@ -89,9 +89,13 @@ video_path = "../data/Charades_v1"
 frames_path = "/media/kayne/SpareDisk/data/video_frames/"
 
 df = pd.read_csv(train_data_path)
-# video_id, start_time, end_time = df.loc[343, ["id", "start_time", "end_time"]]
-# process_video(343, video_id, video_path, start_time, end_time)
 
+# for i in range(len(df)):
+#     if i >= 8000 and i < 16000:
+#         video_id, start_time, end_time = df.loc[i, ["id", "start_time", "end_time"]]
+#         process_video(i, video_id, video_path, start_time, end_time)
+
+### FOR MESSED UP DATA ###
 with open(f"wrong_data_1.json", "r") as f:
     wrong_data = json.load(f)
 
@@ -99,7 +103,7 @@ for i, frame_shape in tqdm(wrong_data):
     video_id, start_time, end_time = df.loc[i, ["id", "start_time", "end_time"]]
     process_video(i, video_id, video_path, start_time, end_time)
 
-# for i in range(len(df)):
-#     if i >= 8000 and i < 16000:
-#         video_id, start_time, end_time = df.loc[i, ["id", "start_time", "end_time"]]
-#         process_video(i, video_id, video_path, start_time, end_time)
+##################
+
+# video_id, start_time, end_time = df.loc[343, ["id", "start_time", "end_time"]]
+# process_video(343, video_id, video_path, start_time, end_time)
