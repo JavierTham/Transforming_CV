@@ -16,13 +16,8 @@ config = {
     "learning_rate": 1e-03,
     "epochs": 20,
     "batch_size": 32,
-    "num_workers": 4,
-    "depth": 6, 
-    "heads": 6,
-    "dim": 512,
-    "mlp_dim": 256
-}
-
+    "num_workers": 4,from ViT import *
+from functions import *
 time_now = time.strftime("%D %X")
 wandb.init(project="Transforming_CV", entity="javiertham", config=config, group="cifar", **{"name": "ViT_" + time_now})
 wandb.config = config
