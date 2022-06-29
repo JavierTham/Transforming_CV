@@ -42,7 +42,7 @@ def trainer(model, device, train_loader, criterion, optimizer, epoch):
 
     return model, losses, scores
 
-def validation(model, device, test_loader, criterion, optimizer, epoch):
+def validation(model, device, test_loader, criterion, optimizer, epoch, save=True):
     model.eval()
 
     test_loss = 0
@@ -73,38 +73,52 @@ def validation(model, device, test_loader, criterion, optimizer, epoch):
     test_loss /= len(test_loader)
 
     # compute accuracy
-    all_y = torch.stack(all_y, dim=0)
+    all_y_true = torch.stack(all_y, dim=0)
     all_y_pred = torch.stack(all_y_pred, dim=0)
     
-    all_y_true = y.cpu().data.squeeze().numpy()
-    all_y_pred = y_pred.cpu().data.squeeze().numpy()
+    all_y_true = all_y_true.cpu().data.squeeze().numpy()
+    all_y_pred = all_y_pred.cpu().data.squeeze().numpy()
     
     test_score = accuracy_score(all_y_true, all_y_pred)
     # top_5_score = top_k_accuracy_score(all_y_true, output.detach().cpu(), k=5, labels=range(157))
 
     print(f'\nValidation set ({len(all_y)} samples): Average loss: {test_loss:.4f}, Accuracy: {100 * test_score:.2f}')
 
-    # save Pytorch models of best record
-    torch.save(model.state_dict(), f'cnnlstm_epoch{epoch + 1}.pth')
-    torch.save(optimizer.state_dict(), f'optimizer_epoch{epoch + 1}.pth')      # save optimizer
-    print(f"Epoch {epoch + 1} model saved!")
+    if save:
+        # save Pytorch models of best record
+        torch.save(model.state_dict(), f'model_epoch{epoch + 1}.pth')
+        torch.save(optimizer.state_dict(), f'optimizer_epoch{epoch + 1}.pth')      # save optimizer
+        print(f"Epoch {epoch + 1} model saved!")
 
     wandb.log({"Epoch": epoch, "Validation top 1 Accuracy": test_score})#, "Validation top 5 Accuracy": top_5_score})
 
     return test_loss, test_score
 
-def predict(model, device, loader):
+def predict(model, device, loader, show_pic=True):
     model.eval()
 
+    X_examples = []
+    y_pred_examples = []
+    y_true_examples = []
+    all_y = []
     all_y_pred = []
     with torch.no_grad():
         for batch_idx, (X, y) in enumerate(loader):
             X = X.to(device)
             output = model(X)
             y_pred = output.max(1, keepdim=True)[1]  # location of max log-probability as prediction
+            all_y.extend(y)
             all_y_pred.extend(y_pred.cpu().data.squeeze().numpy().tolist())
 
-    return all_y_pred
+            if show_pic:
+                # show first example from each batch
+                X_examples.append(X[0])
+                y_pred_examples.append(y_pred[0])
+                y_true_examples.append(y[0])
+
+        all_y_true = torch.stack(all_y, dim=0)
+
+    return X_examples, all_y_true, all_y_pred, y_true_examples, y_pred_examples
 
 def unpickle(file):
     with open(file, 'rb') as fo:
