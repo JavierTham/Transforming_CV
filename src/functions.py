@@ -86,8 +86,8 @@ def validation(model, device, test_loader, criterion, optimizer, epoch, save=Tru
 
     if save:
         # save Pytorch models of best record
-        torch.save(model.state_dict(), f'model_epoch{epoch + 1}.pth')
-        torch.save(optimizer.state_dict(), f'optimizer_epoch{epoch + 1}.pth')      # save optimizer
+        torch.save(model.state_dict(), f'states/model_epoch{epoch + 1}.pth')
+        torch.save(optimizer.state_dict(), f'states/optimizer_epoch{epoch + 1}.pth')      # save optimizer
         print(f"Epoch {epoch + 1} model saved!")
 
     wandb.log({"Epoch": epoch, "Validation top 1 Accuracy": test_score})#, "Validation top 5 Accuracy": top_5_score})
