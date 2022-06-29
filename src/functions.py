@@ -38,7 +38,7 @@ def trainer(model, device, train_loader, criterion, optimizer, epoch):
         
         if (batch_idx + 1) % 10 == 0:
             wandb.log({"Batch": batch_idx + 1, "Training loss": loss.item(),
-                        "Training top 1 accuracy": step_score, "Training top 5 accuracy": top_5_score})
+                        "Training top 1 accuracy": step_score})#, "Training top 5 accuracy": top_5_score})
 
     return model, losses, scores
 
@@ -80,7 +80,7 @@ def validation(model, device, test_loader, criterion, optimizer, epoch):
     all_y_pred = y_pred.cpu().data.squeeze().numpy()
     
     test_score = accuracy_score(all_y_true, all_y_pred)
-    top_5_score = top_k_accuracy_score(all_y_true, output.detach().cpu(), k=5, labels=range(157))
+    # top_5_score = top_k_accuracy_score(all_y_true, output.detach().cpu(), k=5, labels=range(157))
 
     print(f'\nValidation set ({len(all_y)} samples): Average loss: {test_loss:.4f}, Accuracy: {100 * test_score:.2f}')
 
@@ -89,7 +89,7 @@ def validation(model, device, test_loader, criterion, optimizer, epoch):
     torch.save(optimizer.state_dict(), f'optimizer_epoch{epoch + 1}.pth')      # save optimizer
     print(f"Epoch {epoch + 1} model saved!")
 
-    wandb.log({"Validation top 1 Accuracy": test_score, "Validation top 5 Accuracy": top_5_score, "Epoch": epoch})
+    wandb.log({"Epoch": epoch, "Validation top 1 Accuracy": test_score})#, "Validation top 5 Accuracy": top_5_score})
 
     return test_loss, test_score
 
