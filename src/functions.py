@@ -1,7 +1,8 @@
 import torch
-import pickle
+from torchvision import transforms
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import top_k_accuracy_score
+import pickle
 import wandb
 
 def trainer(model, device, train_loader, criterion, optimizer, epoch):
@@ -111,9 +112,10 @@ def predict(model, device, loader, show_pic=True):
             all_y_pred.extend(y_pred.cpu().data.squeeze().numpy().tolist())
 
             if show_pic:
+                pass
                 # show first example from each batch
-                X_examples.append(X[0])
-                y_pred_examples.append(y_pred[0])
+                X_examples.append(X[0].cpu())
+                y_pred_examples.append(y_pred[0].cpu())
                 y_true_examples.append(y[0])
 
         all_y_true = torch.stack(all_y, dim=0)
@@ -124,3 +126,10 @@ def unpickle(file):
     with open(file, 'rb') as fo:
         d = pickle.load(fo, encoding='latin1')
     return d
+
+def inv_normalize(img):
+    inv = transforms.Normalize(
+        mean=[-0.485/0.229, -0.456/0.224, -0.406/0.255],
+        std=[1/0.229, 1/0.224, 1/0.255]
+    )
+    return inv(img)

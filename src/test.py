@@ -1,71 +1,63 @@
-import pandas as pd
-import numpy as np
-import os
+from pytorch_pretrained_vit import ViT
+from functions import *
+from CIFARDataset import *
+from config import *
+
 import torch
 import torch.nn as nn
-from functions import *
-from CNN_LSTM import *
+from torch.utils.data import DataLoader
+import matplotlib.pyplot as plt
 
-train_data_path = "../data/train_data.csv"
-video_path = "../data/Charades_v1"
-frames_path = "/media/kayne/SpareDisk/data/video_frames/"
+from sklearn.metrics import accuracy_score
 
-df = pd.read_csv(train_data_path).iloc[:100, :]
-frames_paths = list(df['id'].apply(lambda x: os.path.join(frames_path, f"{x}.npz")))
-vid_classes = np.asarray(df['vid_class'])
-
-### ------------ test custom Dataset ------------ ###
-dataset = VideoDataset(frames_paths, vid_classes)
-for data in dataset:
-	X, y = data[0], data[1]
-	print("Size/shape of frames:", X.shape)
-	print("Class:", y)
-	break
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-for data in dataset:
-	X, y = data[0], data[1]
-	print("X type:", type(X))
-	print("y type:", type(y))
-	X, y = X.to(device), y.to(device)
-	print("X device:", X.device)
-	print("y device:", y.device)
-	break
-
-### ------------ test training ------------- ###
-# config = {
-#     "learning_rate": 1e-05,
-#     "epochs": 1,
-#     "batch_size": 16,
-#     "sequence_len": 50,
-#     "num_workers": 4,
-#     "lstm_hidden_size": 512, # for benchmarking
-#     "lstm_num_layers": 1   # for benchmarking
-# }
-
-# params = {
-# 	'batch_size': config['batch_size'],
-# 	'shuffle': True,
-# 	'num_workers': config['num_workers'],
-# 	'pin_memory': True
-# }
+# NUM_CLASSES = 100
 
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# cnnlstm = CNNLSTM(config['lstm_hidden_size'], config['lstm_num_layers']).to(device)
-# criterion = nn.CrossEntropyLoss()
-# val_criterion = nn.CrossEntropyLoss(reduction='sum')
-# optimizer = torch.optim.Adam(cnnlstm.parameters(), lr=config['learning_rate'])
+# vit = ViT('B_16_imagenet1k', pretrained=True)
+# n_inputs = vit.fc.in_features
+# vit.fc = nn.Linear(n_inputs, NUM_CLASSES)
+# vit.to(device)
 
-# train_X, val_X, train_y, val_y = train_test_split(frames_paths, vid_classes, test_size=0.20, random_state=42)
+# x = torch.rand(8, 3, 224, 224).to(device)
+# output = vit(x)
+# print(output)
 
-# train_dataset = VideoDataset(train_X, train_y)
-# train_dataloader = DataLoader(train_dataset, **params)
-# val_dataset = VideoDataset(val_X, val_y)
-# val_dataloader = DataLoader(val_dataset, **params)
+TEST_DATA_PATH = "/media/kayne/SpareDisk/data/cifar100/test"
+META_DATA_PATH = "/media/kayne/SpareDisk/data/cifar100/meta"
 
-# for epoch in range(config['epochs']):
-# 	losses, scores = train(cnnlstm, device, train_dataloader, criterion, optimizer, epoch)
-# 	epoch_test_loss, epoch_test_score = validation(cnnlstm, device, val_dataloader, val_criterion, optimizer, epoch)
-# 	print("loss:", losses)
-# 	print("score:", scores)
+# test_data = unpickle(TEST_DATA_PATH)
+meta_data = unpickle(META_DATA_PATH)
+# X_test = test_data["data"]
+# y_test = test_data["fine_labels"]
+fine_labels = meta_data["fine_label_names"]
+
+# pic = X_test.reshape(len(X_test), 3, 32, 32)[0]
+# label = fine_labels[y_test[0]]
+
+# dataset = CIFARDataset(X_test, y_test)
+
+# for x, y in dataset:
+#     print(y)
+#     plt.imshow(x.permute(1,2,0))
+#     plt.show()
+#     break
+
+all_y_pred = torch.load("../output/ResNet/all_y_pred.pt")
+all_y_true = torch.load("../output/ResNet/all_y_true.pt")
+score = accuracy_score(all_y_true, all_y_pred)
+print("accuracy:", score)
+
+pics = torch.load("../output/ResNet/pictures.pt")
+y_pred = torch.load("../output/ResNet/y_pred_examples.pt")
+y_true = torch.load("../output/ResNet/y_true_examples.pt")
+
+for idx in range(len(pics)):
+    print("y_true:", fine_labels[y_true[idx]], "\ny_pred:", fine_labels[y_pred[idx]])
+
+    pic = pics[idx]
+    re_normalize_pic = inv_normalize(pic)
+    plt.imshow(re_normalize_pic.permute(1,2,0))
+    plt.show()
+
+print(pics[0].size())
