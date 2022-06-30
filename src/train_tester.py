@@ -1,13 +1,17 @@
 import os
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
+
 from sklearn import preprocessing
-from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+
 from CNN_LSTM import *
 from functions import *
-import random
+from config import *
+from VideoDataset import *
 
+import random
 random.seed(42)
 
 ### Charades ###
@@ -19,23 +23,6 @@ random.seed(42)
 train_data_path = "../data/UCF_df.csv"
 frames_path = "/media/kayne/SpareDisk/data/UCF101/video_frames/"
 videos_path = "/media/kayne/SpareDisk/data/UCF101/videos/"
-
-config = {
-    "learning_rate": 1e-03,
-    "epochs": 20,
-    "batch_size": 16,
-    "sequence_len": 50,
-    "num_workers": 4,
-    "lstm_hidden_size": 128,
-    "lstm_num_layers": 1
-}
-
-params = {
-    'batch_size': config['batch_size'],
-    'shuffle': True,
-    'num_workers': config['num_workers'],
-    'pin_memory': True
-}
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
