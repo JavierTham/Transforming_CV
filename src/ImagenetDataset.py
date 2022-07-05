@@ -1,8 +1,11 @@
 import torch
 from torchvision import transforms
 from torch.utils.data import Dataset
-
+from torchvision.transforms.functional import InterpolationMode
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+
+from PIL import Image
+import matplotlib.pyplot as plt
 
 class ImagenetDataset(Dataset):
     def __init__(self, X, y):
@@ -10,14 +13,15 @@ class ImagenetDataset(Dataset):
         self.X = X.reshape(len(X), 3, 32, 32) 
         self.y = y
         self.preprocess = transforms.Compose([
-            transforms.Resize(256),
+            transforms.Resize(256, interpolation=InterpolationMode.BICUBIC),
             transforms.CenterCrop(224),
-            transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
-])
-
+            transforms.ToTensor(),
+            transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
+        ])
+    
     def __getitem__(self, idx):
-        X = torch.tensor(self.X[idx], dtype=torch.float)
-        X = self.preprocess(X)
+        # X = torch.tensor(self.X[idx] / 255, dtype=torch.float)
+        X = self.preprocess(Image.fromarray(self.X[idx].transpose(1,2,0)))
         y = torch.tensor(self.y[idx])
         return X, y
     

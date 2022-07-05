@@ -124,7 +124,7 @@ def predict(model, device, loader, show_pic=True):
 
 def unpickle(file):
     with open(file, 'rb') as fo:
-        d = pickle.load(fo, encoding='latin1')
+        d = pickle.load(fo)
     return d
 
 def inv_normalize(img):
