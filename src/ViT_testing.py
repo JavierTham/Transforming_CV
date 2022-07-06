@@ -1,27 +1,24 @@
 # from ViT import *
 from pytorch_pretrained_vit import ViT
 from functions import *
-from config import *
+from config.ViT_config import *
 from CIFARDataset import *
 from torch.utils.data import DataLoader
 import torch.nn as nn
-import matplotlib.pyplot as plt
+import timm
 
 NUM_CLASSES = 100
-STATE_DICT_PATH = "states/ViTmodel_epoch20.pth"
+STATE_DICT_PATH = "states/ViT-Ti_epoch9.pth"
 TEST_DATA_PATH = "/media/kayne/SpareDisk/data/cifar100/test"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 ### model ###
-vit = ViT('B_16_imagenet1k', pretrained=True)
-for param in vit.parameters():
-    param.requires_grad = False
-n_inputs = vit.fc.in_features
-vit.fc = nn.Linear(n_inputs, NUM_CLASSES)
-
-state_dict = torch.load(STATE_DICT_PATH, map_location="cpu")
-vit.load_state_dict(state_dict)
+vit = timm.create_model(
+    'deit_tiny_patch16_224',
+    num_classes=NUM_CLASSES,
+    checkpoint_path=STATE_DICT_PATH)
+vit.eval()
 vit.to(device)
 ###
 
