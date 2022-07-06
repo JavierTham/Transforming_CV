@@ -3,7 +3,7 @@ from torchvision import transforms
 from torch.utils.data import Dataset
 
 class CIFARDataset(Dataset):
-    def __init__(self, X, y, size=384):
+    def __init__(self, X, y, size=224):
         super(CIFARDataset, self).__init__()
         self.X = X.reshape(len(X), 3, 32, 32) 
         self.y = y
