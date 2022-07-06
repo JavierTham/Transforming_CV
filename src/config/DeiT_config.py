@@ -1,7 +1,7 @@
 config = {
-    "learning_rate": 1e-04,
+    "learning_rate": 1e-03,
     "epochs": 20,
-    "batch_size": 256,
+    "batch_size": 512,
     "num_workers": 4,
     "pretrained": True
 }
