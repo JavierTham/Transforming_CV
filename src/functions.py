@@ -110,9 +110,8 @@ def predict(model, device, loader, show_pic=True):
             y_pred = output.max(1, keepdim=True)[1]  # location of max log-probability as prediction
             all_y.extend(y)
             all_y_pred.extend(y_pred.cpu().data.squeeze().numpy().tolist())
-
+            
             if show_pic:
-                pass
                 # show first example from each batch
                 X_examples.append(X[0].cpu())
                 y_pred_examples.append(y_pred[0].cpu())
