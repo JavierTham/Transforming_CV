@@ -1,12 +1,8 @@
 config = {
     "learning_rate": 1e-04,
     "epochs": 20,
-    "batch_size": 32,
+    "batch_size": 512,
     "num_workers": 4,
-    # "depth": 6, 
-    # "heads": 6,
-    # "dim": 512,
-    # "mlp_dim": 256,
     "pretrained": True
 }
 
