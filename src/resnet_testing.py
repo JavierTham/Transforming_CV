@@ -2,9 +2,8 @@ import torch
 from CIFARDataset import *
 from functions import *
 from Resnet import *
-from config import *
+from config.Resnet_config import *
 from torch.utils.data import DataLoader
-import matplotlib.pyplot as plt
 
 torch.cuda.empty_cache()
 
