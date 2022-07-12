@@ -19,7 +19,7 @@ def create_df(videos_path, classes):
 			video_reader = cv2.VideoCapture(vid_path)
 			fps = int(video_reader.get(cv2.CAP_PROP_FPS))
 			total_frame_count = video_reader.get(cv2.CAP_PROP_FRAME_COUNT)
-			group_id = action + re.findall("g\d+_c\d+", vid)[0]
+			group_id = action + re.findall("g\d+", vid)[0]
 
 			df.append((idx, group_id, vid_path, action, fps, total_frame_count))
 			idx += 1
