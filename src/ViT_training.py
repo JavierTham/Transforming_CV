@@ -1,6 +1,7 @@
+import torch.nn as nn
+
 from functions import *
 from config.ViT_config import *
-from Resnet import *
 from CIFARDataset import *
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
