@@ -11,12 +11,11 @@ from CIFARDataset import *
 
 import wandb
 
-STATE_DICT_PATH = "states/mobilevitv2-0.75.pt"
 TRAIN_DATA_PATH = "/media/kayne/SpareDisk/data/cifar100/train"
 NUM_CLASSES = 100
 
 time_now = time.strftime("%D %X")
-wandb.init(project="Transforming_CV", entity="javiertham", config=config, group="cifar", **{"name": "MobileViTv2_075" + time_now})
+wandb.init(project="Transforming_CV", entity="javiertham", config=config, group="cifar", **{"name": "MobileViTv2_050" + time_now})
 wandb.config = config
 
 train_data = unpickle(TRAIN_DATA_PATH)
@@ -26,7 +25,7 @@ y_train = train_data["fine_labels"]
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 mobilevit = timm.create_model(
-	"mobilevitv2_075",
+	"mobilevitv2_050",
 	pretrained=True,
 	num_classes=NUM_CLASSES)
 mobilevit.to(device)
@@ -39,7 +38,6 @@ X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.
 train_dataset = CIFARDataset(X_train, y_train, size=224)
 train_dataloader = DataLoader(train_dataset, **params)
 val_dataset = CIFARDataset(X_val, y_val, size=224)
-
 val_dataloader = DataLoader(val_dataset, **params)
 
 for epoch in range(config['epochs']):

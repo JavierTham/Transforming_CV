@@ -8,16 +8,16 @@ from config.MobileViTv2_config import *
 from torch.utils.data import DataLoader
 
 NUM_CLASSES = 100
-STATE_DICT_PATH = "states/MobileViTv2_075_model_epoch9.pth"
+STATE_DICT_PATH = "states/MobileViTv2_050_epoch14.pth"
 TEST_DATA_PATH = "/media/kayne/SpareDisk/data/cifar100/test"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 ### model ###
 mobilevit = timm.create_model(
-	"mobilevitv2_075",
-	pretrained=True,
-	num_classes=NUM_CLASSES)
+	"mobilevitv2_050",
+	num_classes=NUM_CLASSES,
+    checkpoint_path=STATE_DICT_PATH)
 mobilevit.to(device)
 mobilevit.eval()
 ###
