@@ -58,7 +58,6 @@ def validation(model, device, test_loader, criterion, optimizer, epoch, save=Tru
 
             loss = criterion(output, y)
             test_loss += loss.item()                 
-            # y_pred = output.max(1, keepdim=True)[1]
             y_pred = torch.max(output, 1)[1]
 
             # collect all y and y_pred in all batches
@@ -86,7 +85,6 @@ def validation(model, device, test_loader, criterion, optimizer, epoch, save=Tru
     print(f'\nValidation set ({len(all_y)} samples): Average loss: {test_loss:.4f}, Accuracy: {100 * test_score:.2f}')
 
     if save:
-        # save Pytorch models of best record
         torch.save(model.state_dict(), f'states/model_epoch{epoch + 1}.pth')
         torch.save(optimizer.state_dict(), f'states/optimizer_epoch{epoch + 1}.pth')      # save optimizer
         print(f"Epoch {epoch + 1} model saved!")
