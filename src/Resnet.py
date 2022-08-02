@@ -1,10 +1,11 @@
 import torch.nn as nn
 from torchvision import models
+from torchvision.models import ResNet50_Weights
 
 class Resnet(nn.Module):
     def __init__(self, num_classes):
         super(Resnet, self).__init__()
-        self.resnet = models.resnet50(pretrained=True)
+        self.resnet = models.resnet50(weights=ResNet50_Weights.DEFAULT)
         self.num_classes = num_classes
         
         self.n_inputs = self.resnet.fc.in_features
