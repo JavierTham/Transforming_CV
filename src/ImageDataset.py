@@ -13,7 +13,7 @@ class ImageDataset(Dataset):
         self.y = y
         self.preprocess = transforms.Compose([
             transforms.Resize(256, interpolation=InterpolationMode.BICUBIC),
-            transforms.CenterCrop(224),
+            transforms.CenterCrop(size),
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
         ])
