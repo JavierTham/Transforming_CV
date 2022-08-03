@@ -119,9 +119,9 @@ def predict(model, device, loader, show_pic=True):
 
     return X_examples, all_y_true, all_y_pred, y_true_examples, y_pred_examples
 
-def unpickle(file):
-    with open(file, 'rb') as fo:
-        d = pickle.load(fo, encoding="latin1")
+def unpickle(file, mode='rb', encoding="latin1"):
+    with open(file, mode) as fo:
+        d = pickle.load(fo, encoding=encoding)
     return d
 
 def inv_normalize(img):
