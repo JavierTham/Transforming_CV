@@ -1,6 +1,6 @@
 import torch
-from torchvision import transforms
 from torch.utils.data import Dataset
+from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
@@ -11,6 +11,8 @@ class ImageDataset(Dataset):
         super(ImageDataset, self).__init__()
         self.X = X.reshape(len(X), 3, 32, 32) 
         self.y = y
+        # standard image preprocessing for classification
+        # change accordingly
         self.preprocess = transforms.Compose([
             transforms.Resize(256, interpolation=InterpolationMode.BICUBIC),
             transforms.CenterCrop(size),
@@ -20,7 +22,6 @@ class ImageDataset(Dataset):
 
     def __getitem__(self, idx):
         X = self.preprocess(Image.fromarray(self.X[idx].transpose(1,2,0)))
-        y = torch.tensor(self.y[idx])
         y = torch.tensor(self.y[idx])
         return X, y
     
