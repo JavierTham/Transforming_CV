@@ -54,6 +54,8 @@ group.add_argument("--optimizer", default=torch.optim.Adam, metavar="str",
 group = parser.add_argument_group("Miscellaneous parameters")
 group.add_argument("--workers", default=0, type=int, metavar="int",
                     help="number of workers for dataloader")
+group.add_argument('--pin-mem', action='store_true', default=False,
+                    help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
 
 def list_timm_models(filter='', pretrained=False):
     pprint(timm.list_models(filter=filter, pretrained=pretrained))
@@ -80,38 +82,6 @@ def create_model(
 
     model = timm.create_model(model_name, pretrained=pretrained, checkpoint_path=checkpoint_path, **kwargs)
     return model
-
-# def train_model(
-#         model,
-#         criterion,
-#         optimizer,
-#         train_dataloader,
-#         val_dataloader,
-#         epochs=10):
-#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#     model.to(device)
-
-#     for epoch in range(epochs):
-#         model, losses, scores = trainer(
-#             model,
-#             device,
-#             train_dataloader,
-#             criterion,
-#             optimizer,
-#             epoch)
-
-#         val_loss, val_score = validation(
-#             model,
-#             device,
-#             val_dataloader,
-#             criterion,
-#             optimizer,
-#             epoch)
- 
-def get_dataloaders(X_train, y_train, dataset_name):
-    train_dataloader = None 
-    test_dataloader = None
-    return train_dataloader, test_dataloader
 
 def parse_data(data_dir):
     
@@ -155,7 +125,6 @@ def main():
     else:
         model = eval(f"torchvision.models.{args.model}(weights='{args.weights}')")
         # change classifier head
-
         last_layer_name = list(model.named_children())[-1][0]
         layer = getattr(model, last_layer_name)
         if isinstance(layer, nn.Linear):
@@ -163,20 +132,22 @@ def main():
         else:
             in_features = get_in_features(layer.children())
         setattr(model, last_layer_name, nn.Linear(in_features, int(args.num_classes)))
+
     model.to(device)
 
     params = {
         "batch_size": args.batch_size,
         "num_workers": args.workers,
-        "pin_memory": True,
+        "pin_memory": args.pin_mem,
         "shuffle": True}
 
-    # change custom Dataset class if needed
+    # change custom Dataset class if required
     train_dataset = ImageDataset(X_train, y_train, size=int(args.img_size))
     train_dataloader = DataLoader(train_dataset, **params)
     val_dataset = ImageDataset(X_val, y_val, size=int(args.img_size))
     val_dataloader = DataLoader(val_dataset, **params)
 
+    # Change criterion if required
     criterion = nn.CrossEntropyLoss()
     optimizer = args.optimizer(model.parameters(), lr=float(args.lr))
     for epoch in range(args.epochs):
