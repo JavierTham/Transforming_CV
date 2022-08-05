@@ -15,38 +15,52 @@ from sklearn.model_selection import train_test_split
 from functions import trainer, validation
 from ImageDataset import *
 
-parser = argparse.ArgumentParser(description='PyTorch model training')
-parser.add_argument("model",
-                    help="name of model")
+from pprint import pprint
+
+parser = argparse.ArgumentParser(description='PyTorch classification model training')
+
+group = parser.add_argument_group("Dataset")
 parser.add_argument("data_dir",
-                    help="path to folder containing train and validation data")
+                    help="path to folder containing train and validation folders")
+
+group = parser.add_argument_group("Model parameters")                    
+parser.add_argument("model",
+                    help="name of model (from timm or torchvision)")
 parser.add_argument("num_classes", type=int,
                     help="number of class labels")
-parser.add_argument("--pretrained", action="store_true",
+group.add_argument("--pretrained", action="store_true",
                     help="use pretrained model for timm models (default: false)")
-parser.add_argument("--checkpoint-path", default="",
+group.add_argument("--img-size", default=224, type=int, metavar="int",
+                    help="Input image dimension, uses model default if empty")                    
+group.add_argument("--batch-size", default=128, type=int, metavar="int",
+                    help="mini-batch size (default: 128)")
+group.add_argument("--checkpoint-path", default="", metavar="str",
                     help="path to model state dict")
-parser.add_argument("--batch-size", default=128, type=int,
-                    metavar='', help="mini-batch size (default: 128)")
-parser.add_argument("--lr", default=0.001,
-                    help="learning rate (default:0.001)")
-parser.add_argument("--workers", default=0, type=int,
-                    help="number of workers for dataloader")
-parser.add_argument("--epochs", default=10, type=int,
-                    help="number of epochs (default: 10)")
-parser.add_argument("--img-size", default=224, type=int,
-                    metavar="", help="Input image dimension, uses model default if empty")
-parser.add_argument("--optimizer", default=torch.optim.Adam,
-                    help="optimizer (default: Adam)")
-parser.add_argument("--criterion", default=nn.CrossEntropyLoss(),
-                    help="criterion (default: CrossEntropyLoss)")
-parser.add_argument("--timm", action="store_true",
+group.add_argument("--timm", action="store_true",
                     help="Use timm model (default: false - import from torchvision)")
-parser.add_argument("--weights", default=None, type=str,
+group.add_argument("--weights", default=None, type=str, metavar="str",
                     help="pretrained weight for torchvision models from API (eg. 'IMAGENET1K_V1', 'DEFAULT' etc.)")
 
+group = parser.add_argument_group("LR parameters")
+group.add_argument("--lr", default=0.001, metavar="float",
+                    help="learning rate (default:0.001)")
+group.add_argument("--epochs", default=10, type=int, metavar="int",
+                    help="number of epochs (default: 10)")
+
+group = parser.add_argument_group("Optimizer parameters")
+group.add_argument("--optimizer", default=torch.optim.Adam, metavar="str",
+                    help="optimizer (default: Adam)")
+
+group = parser.add_argument_group("Miscellaneous parameters")
+group.add_argument("--workers", default=0, type=int, metavar="int",
+                    help="number of workers for dataloader")
+
 def list_timm_models(filter='', pretrained=False):
-    return timm.list_models(filter=filter, pretrained=pretrained)
+    pprint(timm.list_models(filter=filter, pretrained=pretrained))
+
+def list_torch_models():
+    import torchvision.models
+    pprint(dir(torchvision.models))
 
 def create_model(
         model_name,
@@ -142,13 +156,12 @@ def main():
         model = eval(f"torchvision.models.{args.model}(weights='{args.weights}')")
         # change classifier head
 
-        ### FIX THIS
-        last_layer_name = list(model.children())
-        layers = getattr(model, last_layer_name)
-        if isinstance(layers, nn.Linear):
-            in_features = layers.in_features
+        last_layer_name = list(model.named_children())[-1][0]
+        layer = getattr(model, last_layer_name)
+        if isinstance(layer, nn.Linear):
+            in_features = layer.in_features
         else:
-            in_features = get_in_features(layers.children())
+            in_features = get_in_features(layer.children())
         setattr(model, last_layer_name, nn.Linear(in_features, int(args.num_classes)))
     model.to(device)
 
@@ -158,15 +171,20 @@ def main():
         "pin_memory": True,
         "shuffle": True}
 
+    # change custom Dataset class if needed
     train_dataset = ImageDataset(X_train, y_train, size=int(args.img_size))
     train_dataloader = DataLoader(train_dataset, **params)
     val_dataset = ImageDataset(X_val, y_val, size=int(args.img_size))
     val_dataloader = DataLoader(val_dataset, **params)
 
+    criterion = nn.CrossEntropyLoss()
     optimizer = args.optimizer(model.parameters(), lr=float(args.lr))
     for epoch in range(args.epochs):
-        model, losses, scores = trainer(model, device, train_dataloader, args.criterion, optimizer, epoch)
-        val_loss, val_score = validation(model, device, val_dataloader, args.criterion, optimizer, epoch)
+        model, losses, scores = trainer(model, device, train_dataloader, criterion, optimizer, epoch)
+        val_loss, val_score = validation(model, device, val_dataloader, criterion, optimizer, epoch)
+
+        # if args.save:
+        #     pass
 
 if __name__ == "__main__":
     main()
