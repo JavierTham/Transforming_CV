@@ -7,7 +7,11 @@ git clone https://github.com/JavierTham/Transforming_CV.git
 ```
 
 ## Train a model
-
+Models are loaded from the timm or torchvision library. Check out the list of available models
+timm
+```python
+python tformer.py --list-models
+```
 
 ## Validate model
 
