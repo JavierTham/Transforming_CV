@@ -2,7 +2,9 @@
 
 ## Getting started 
 
-`git clone https://github.com/JavierTham/Transforming_CV.git`
+```python
+git clone https://github.com/JavierTham/Transforming_CV.git
+```
 
 ## Train a model
 
