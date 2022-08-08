@@ -10,7 +10,14 @@ git clone https://github.com/JavierTham/Transforming_CV.git
 Models are loaded from the timm or torchvision library. Check out the list of available models
 timm
 ```python
-python tformer.py --list-models
+import timm 
+
+timm.list_models()[:5]
+>>> ['adv_inception_v3',
+ 'cspdarknet53',
+ 'cspdarknet53_iabn',
+ 'cspresnet50',
+ 'cspresnet50d']
 ```
 
 ## Validate model
