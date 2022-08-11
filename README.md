@@ -10,7 +10,10 @@ pip install -r requirements.txt
 
 ## Train a model
 Models are loaded from the timm or torchvision library. Check out the list of available models
-timm
+
+### Search for available models
+
+_timm_
 ```python
 import timm 
 
@@ -22,13 +25,15 @@ timm.list_models()[:5]
  'cspresnet50d']
 ```
 
-torchvision
+_torchvision_
 ```python
 from functions import list_torch_models
 
 list_torch_models()
 >>> [
 ```
+
+Torchvision has updated the way we load a pretrained model
 
 Script for timm models
 ```python
@@ -37,7 +42,7 @@ python train ../data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 2
 
 Script for torchvision models
 ```python
-python train ../data/cifar100 resnet50 100 --weights ResNet50_DEFAULT --lr 0.0001 --workers 4 --pin-mem
+python train ../data/cifar100 resnet50 100 --weights ResNet50_Weights.DEFAULT --lr 0.0001 --workers 4 --pin-mem
 ```
 
 ## Validate model
