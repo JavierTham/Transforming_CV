@@ -28,7 +28,7 @@ timm.list_models()[:5]
 
 **torchvision**
 
-Check out their [docs](https://pytorch.org/vision/0.13/models.html) to find all possible models and their available pretrained weights
+Check out their [docs](https://pytorch.org/vision/0.13/models.html) or [source code](https://github.com/pytorch/vision/tree/main/torchvision/models) to find all possible models and their available pretrained weights
 
 _*Torchvision has updated the way we load a pretrained model_
 
@@ -38,7 +38,7 @@ Training script for timm models
 python train ../data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 20 --workers 4 --pin-mem
 ```
 
-Training script for torchvision models (copy the model name and weights directly from the official docs)
+Training script for torchvision models (copy string for weights directly from the official docs)
 ```python
 python train ../data/cifar100 resnet50 100 --weights ResNet50_Weights.IMAGENET1K_V1 --lr 0.0001 --workers 4 --pin-mem
 ```
