@@ -4,6 +4,8 @@
 
 ```python
 git clone https://github.com/JavierTham/Transforming_CV.git
+cd Transforming_CV
+pip install -r requirements.txt 
 ```
 
 ## Train a model
@@ -18,6 +20,14 @@ timm.list_models()[:5]
  'cspdarknet53_iabn',
  'cspresnet50',
  'cspresnet50d']
+```
+
+torchvision
+```python
+from functions import list_torch_models
+
+list_torch_models()
+>>> [
 ```
 
 ## Validate model
