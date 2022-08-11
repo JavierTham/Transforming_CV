@@ -30,6 +30,16 @@ list_torch_models()
 >>> [
 ```
 
+Script for timm models
+```python
+python train ../data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 20 --workers 4 --pin-mem
+```
+
+Script for torchvision models
+```python
+python train ../data/cifar100 resnet50 100 --weights ResNet50_DEFAULT --lr 0.0001 --workers 4 --pin-mem
+```
+
 ## Validate model
 
 ## Further work
