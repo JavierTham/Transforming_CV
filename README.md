@@ -8,6 +8,8 @@ cd Transforming_CV
 pip install -r requirements.txt 
 ```
 
+_remember to install CUDA for pytorch! https://pytorch.org/get-started/locally/_
+
 ## Train a model
 Models are loaded from the timm or torchvision library. Check out the list of available models
 
@@ -32,15 +34,22 @@ Check out their [docs](https://pytorch.org/vision/0.13/models.html) or [source c
 
 _*Torchvision has updated the way we load a pretrained model_
 
+<br>
 
 Training script for timm models
 ```python
-python train ../data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 20 --workers 4 --pin-mem
+python train.py ../data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 20 --workers 4 --pin-mem
 ```
+
 
 Training script for torchvision models (copy string for weights directly from the official docs)
 ```python
-python train ../data/cifar100 resnet50 100 --weights ResNet50_Weights.IMAGENET1K_V1 --lr 0.0001 --workers 4 --pin-mem
+python train.py ../data/cifar100 resnet50 100 --weights ResNet50_Weights.IMAGENET1K_V1 --lr 0.0001 --workers 4 --pin-mem
+```
+
+for more help
+```python
+python train.py --help
 ```
 
 ## Validate model
