@@ -13,7 +13,8 @@ Models are loaded from the timm or torchvision library. Check out the list of av
 
 ### Search for available models
 
-_timm_
+**timm**
+
 ```python
 import timm 
 
@@ -25,24 +26,21 @@ timm.list_models()[:5]
  'cspresnet50d']
 ```
 
-_torchvision_
-```python
-from functions import list_torch_models
+**torchvision**
 
-list_torch_models()
->>> [
-```
+Check out their [docs](https://pytorch.org/vision/0.13/models.html) to find all possible models and their available pretrained weights
 
-Torchvision has updated the way we load a pretrained model
+_*Torchvision has updated the way we load a pretrained model_
 
-Script for timm models
+
+Training script for timm models
 ```python
 python train ../data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 20 --workers 4 --pin-mem
 ```
 
-Script for torchvision models
+Training script for torchvision models (copy the model name and weights directly from the official docs)
 ```python
-python train ../data/cifar100 resnet50 100 --weights ResNet50_Weights.DEFAULT --lr 0.0001 --workers 4 --pin-mem
+python train ../data/cifar100 resnet50 100 --weights ResNet50_Weights.IMAGENET1K_V1 --lr 0.0001 --workers 4 --pin-mem
 ```
 
 ## Validate model
