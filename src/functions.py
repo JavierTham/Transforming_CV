@@ -1,16 +1,44 @@
 import torch
 from torchvision import transforms
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import top_k_accuracy_score
 import pickle
 import wandb
 
-def trainer(model, device, train_loader, criterion, optimizer, epoch):
+class Logger:
+    """Log metrics"""
+    def __init__(self):
+        pass
+
+    def update(self, val):
+        self.logs.append(val)
+        # self.
+
+    def save(self, path):
+        with open(path, "w") as f:
+            f.write(self.logs)
+
+
+def trainer(
+        model,
+        device,
+        train_loader,
+        criterion,
+        optimizer,
+        epoch):
+    """train the model
+    
+    Args:
+        model - model to train
+        device - cuda or cpu
+        train_loader (torch.utils.data.DataLoader) - DataLoader for training data
+        criterion - criterion for loss function
+        optimizer - optimizer to use for backprop
+    """
     model.train()
+    model.to(device)
     
     losses = []
     scores = []
-    top_5 = []
 
     for batch_idx, data in enumerate(train_loader):
         X, y = data
@@ -28,18 +56,16 @@ def trainer(model, device, train_loader, criterion, optimizer, epoch):
 
         step_score = accuracy_score(y_true, y_pred)
         scores.append(step_score)
-
-        # top_5_score = top_k_accuracy_score(y_true, output.detach().cpu(), k=5, labels=range(157))
-        # top_5.append(top_5_score)
         
         loss.backward()
         optimizer.step()
 
-        print(f"Batch {batch_idx} loss:", loss.item(), "\ntop 1 accuracy:", step_score) #, "\ntop 5 accuracy:", top_5_score)
+        print(f"Batch {batch_idx} loss:", loss.item(), "\ntop 1 accuracy:", step_score)
         
+        # log metrics every 10 batches
         if (batch_idx + 1) % 10 == 0:
             wandb.log({"Batch": batch_idx + 1, "Training loss": loss.item(),
-                        "Training top 1 accuracy": step_score})#, "Training top 5 accuracy": top_5_score})
+                        "Training top 1 accuracy": step_score})
 
     return model, losses, scores
 
@@ -80,16 +106,15 @@ def validation(model, device, test_loader, criterion, optimizer, epoch, save=Tru
     all_y_pred = all_y_pred.cpu().data.squeeze().numpy()
     
     test_score = accuracy_score(all_y_true, all_y_pred)
-    # top_5_score = top_k_accuracy_score(all_y_true, output.detach().cpu(), k=5, labels=range(157))
 
     print(f'\nValidation set ({len(all_y)} samples): Average loss: {test_loss:.4f}, Accuracy: {100 * test_score:.2f}')
 
     if save:
         torch.save(model.state_dict(), f'states/model_epoch{epoch + 1}.pth')
-        torch.save(optimizer.state_dict(), f'states/optimizer_epoch{epoch + 1}.pth')      # save optimizer
+        torch.save(optimizer.state_dict(), f'states/optimizer_epoch{epoch + 1}.pth')
         print(f"Epoch {epoch + 1} model saved!")
 
-    wandb.log({"Epoch": epoch, "Validation top 1 Accuracy": test_score})#, "Validation top 5 Accuracy": top_5_score})
+    wandb.log({"Epoch": epoch, "Validation top 1 Accuracy": test_score})
 
     return test_loss, test_score
 

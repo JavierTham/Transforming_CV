@@ -73,11 +73,9 @@ def parse_data(data_dir):
 
 def get_in_features(layers):
     for layer in layers:
-        print(layer)
         if isinstance(layer, nn.Linear):
             return layer.in_features
-    print("No in_features found")
-    raise Exception
+    raise Exception("No in_features found")
 
 def create_model(model_name, weights=None):
     return eval(f"torchvision.models.{model_name}(weights='{weights}')")
