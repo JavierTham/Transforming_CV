@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
 from config.ViT_config import *
-from functions import trainer
+from functions import trainer, validation
 from ImageDataset import *
 
 from pprint import pprint
