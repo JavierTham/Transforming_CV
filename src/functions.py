@@ -4,20 +4,6 @@ from sklearn.metrics import accuracy_score
 import pickle
 import wandb
 
-class Logger:
-    """Log metrics"""
-    def __init__(self):
-        pass
-
-    def update(self, val):
-        self.logs.append(val)
-        # self.
-
-    def save(self, path):
-        with open(path, "w") as f:
-            f.write(self.logs)
-
-
 def trainer(
         model,
         device,
@@ -63,9 +49,9 @@ def trainer(
         print(f"Batch {batch_idx} loss:", loss.item(), "\ntop 1 accuracy:", step_score)
         
         # log metrics every 10 batches
-        if (batch_idx + 1) % 10 == 0:
-            wandb.log({"Batch": batch_idx + 1, "Training loss": loss.item(),
-                        "Training top 1 accuracy": step_score})
+        # if (batch_idx + 1) % 10 == 0:
+        #     wandb.log({"Batch": batch_idx + 1, "Training loss": loss.item(),
+        #                 "Training top 1 accuracy": step_score})
 
     return model, losses, scores
 
@@ -114,7 +100,7 @@ def validation(model, device, test_loader, criterion, optimizer, epoch, save=Tru
         torch.save(optimizer.state_dict(), f'states/optimizer_epoch{epoch + 1}.pth')
         print(f"Epoch {epoch + 1} model saved!")
 
-    wandb.log({"Epoch": epoch, "Validation top 1 Accuracy": test_score})
+    # wandb.log({"Epoch": epoch, "Validation top 1 Accuracy": test_score})
 
     return test_loss, test_score
 
