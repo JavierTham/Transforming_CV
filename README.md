@@ -52,6 +52,22 @@ for more help
 python train.py --help
 ```
 
+## Directory structure
+
+```
+.
+├── data
+│   ├── train
+│   │   ├── X.npy
+│   │   └── y.npy  
+│   └── test
+│       ├── X.npy
+│       └── y.npy
+└── src
+    ├── train.py
+    └── validate.py
+```
+
 ## Validate model
 
 ## Further work
