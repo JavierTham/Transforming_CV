@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
 from config.ViT_config import *
-from functions import trainer, validation
+from functions import trainer
 from ImageDataset import *
 
 from pprint import pprint
@@ -51,7 +51,7 @@ group.add_argument("--epochs", default=10, type=int, metavar="int",
                     help="number of epochs (default: 10)")
 
 group = parser.add_argument_group("Optimizer parameters")
-group.add_argument("--optimizer", default=torch.optim.Adam, metavar="str",
+group.add_argument("--optimizer", default="Adam", metavar="str",
                     help="optimizer (default: Adam)")
 
 group = parser.add_argument_group("Miscellaneous parameters")
@@ -63,7 +63,7 @@ group.add_argument("--save", default="store_true",
                     help="save state_dict for model and optimizer (saved in /states/{}_epoch_{}.pth")
 
 def parse_data(data_dir):
-    
+
     train_path = os.path.join(data_dir, "train")
     val_path = os.path.join(data_dir, "validation")
 
@@ -74,31 +74,36 @@ def parse_data(data_dir):
     return X_train, X_val, y_train, y_val
 
 def get_in_features(layers):
+    '''
+    returns the in_features attribute of the first linear layer
+    to change classifier head
+    '''
     for layer in layers:
         if isinstance(layer, nn.Linear):
             return layer.in_features
     raise Exception("No in_features found")
 
 def create_model(model_name, weights=None):
+    '''Create (pretrained) torchvision models'''
     return eval(f"torchvision.models.{model_name}(weights='{weights}')")
 
 def main():
     args = parser.parse_args()
     print(args)
 
-    time_now = time.strftime("%D %X")
-    log_params = dict(
-        project = "Transforming_CV",
-        entity = "javiertham",
-        config = vars(args),
-        group = "cifar",
-        name = args.model + "_" + time_now
-    )
+    ### Can change to whatever logging software you use
+    # time_now = time.strftime("%D %X")
+    # log_params = dict(
+    #     project = "Transforming_CV",
+    #     entity = "javiertham",
+    #     config = vars(args),
+    #     group = "cifar",
+    #     name = args.model + "_" + time_now
+    # )
+    # wandb.init(**log_params)
+    # wandb.config = config
 
     X_train, X_val, y_train, y_val = parse_data(args.data_dir)
-
-    wandb.init(**log_params)
-    wandb.config = config
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -123,12 +128,6 @@ def main():
 
     model.to(device)
 
-    params = {
-        "batch_size": args.batch_size,
-        "num_workers": args.workers,
-        "pin_memory": args.pin_mem,
-        "shuffle": True}
-
     # change preprocessing for image if required
     preprocess = transforms.Compose([
             transforms.Resize(256, interpolation=InterpolationMode.BICUBIC),
@@ -136,6 +135,12 @@ def main():
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
         ])
+
+    params = {
+        "batch_size": args.batch_size,
+        "num_workers": args.workers,
+        "pin_memory": args.pin_mem,
+        "shuffle": True}
 
     # change custom Dataset class if required
     train_dataset = ImageDataset(X_train, y_train, preprocess)
@@ -145,7 +150,9 @@ def main():
 
     # Change criterion if required
     criterion = nn.CrossEntropyLoss()
-    optimizer = args.optimizer(model.parameters(), lr=float(args.lr))
+
+    optimizer = eval(f"torch.optim.{args.optimizer}")
+    optimizer = optimizer(model.parameters(), lr=float(args.lr))
     try:
         for epoch in range(args.epochs):
             model, losses, scores = trainer(model, device, train_dataloader, criterion, optimizer, epoch)
@@ -153,6 +160,7 @@ def main():
 
     except KeyboardInterrupt:
         pass
+
 
 if __name__ == "__main__":
     main()
