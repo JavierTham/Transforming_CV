@@ -3,7 +3,6 @@ import numpy as np
 import argparse
 import time
 import os
-from scipy.__config__ import get_info
 
 import timm
 import torch
@@ -12,10 +11,12 @@ import torchvision
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
+from config.ViT_config import *
 from functions import trainer, validation
 from ImageDataset import *
 
 from pprint import pprint
+import wandb
 
 parser = argparse.ArgumentParser(description='PyTorch classification model training')
 
@@ -28,18 +29,18 @@ parser.add_argument("model",
                     help="name of model (from timm or torchvision)")
 parser.add_argument("num_classes", type=int,
                     help="number of class labels")
+group.add_argument("--timm", action="store_true",
+                    help="Use timm model (default: false - import from torchvision)")
 group.add_argument("--pretrained", action="store_true",
                     help="use pretrained model for timm models (default: false)")
+group.add_argument("--weights", default=None, type=str, metavar="str",
+                    help="pretrained weight for torchvision models from API (eg. 'IMAGENET1K_V1', 'DEFAULT' etc.)")
 group.add_argument("--img-size", default=224, type=int, metavar="int",
                     help="Input image dimension, uses model default if empty")                    
 group.add_argument("--batch-size", default=128, type=int, metavar="int",
                     help="mini-batch size (default: 128)")
 group.add_argument("--checkpoint-path", default="", metavar="str",
                     help="path to model state dict")
-group.add_argument("--timm", action="store_true",
-                    help="Use timm model (default: false - import from torchvision)")
-group.add_argument("--weights", default=None, type=str, metavar="str",
-                    help="pretrained weight for torchvision models from API (eg. 'IMAGENET1K_V1', 'DEFAULT' etc.)")
 
 group = parser.add_argument_group("LR parameters")
 group.add_argument("--lr", default=0.001, metavar="float",
@@ -56,32 +57,8 @@ group.add_argument("--workers", default=0, type=int, metavar="int",
                     help="number of workers for dataloader")
 group.add_argument('--pin-mem', action='store_true', default=False,
                     help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
-
-def list_timm_models(filter='', pretrained=False):
-    pprint(timm.list_models(filter=filter, pretrained=pretrained))
-
-def list_torch_models():
-    import torchvision.models
-    pprint(dir(torchvision.models))
-
-def create_model(
-        model_name,
-        pretrained=False,
-        checkpoint_path='',
-        **kwargs):
-    """Create a model
-
-    Args:
-        model_name (str): name of model to instantiate
-        pretrained (bool): load pretrained ImageNet-1k weights if true
-    
-    Keyword Args:
-        num_classes (int): number of output nodes for classification head
-        **: other kwargs are model specific
-    """
-
-    model = timm.create_model(model_name, pretrained=pretrained, checkpoint_path=checkpoint_path, **kwargs)
-    return model
+group.add_argument("--save", default="store_true",
+                    help="save state_dict for model and optimizer (saved in /states/{}_epoch_{}.pth")
 
 def parse_data(data_dir):
     
@@ -102,15 +79,26 @@ def get_in_features(layers):
     print("No in_features found")
     raise Exception
 
+def create_model(model_name, weights=None):
+    return eval(f"torchvision.models.{model_name}(weights='{weights}')")
+
 def main():
     args = parser.parse_args()
     print(args)
 
+    time_now = time.strftime("%D %X")
+    log_params = dict(
+        project = "Transforming_CV",
+        entity = "javiertham",
+        config = vars(args),
+        group = "cifar",
+        name = args.model + "_" + time_now
+    )
+
     X_train, X_val, y_train, y_val = parse_data(args.data_dir)
 
-    # time_now = time.strftime("%D %X")
-    # wandb.init(project="Transforming_CV", entity="javiertham", config=config, group="cifar", **{"name": "MobileViTv2_050" + time_now})
-    # wandb.config = config
+    wandb.init(**log_params)
+    wandb.config = config
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -123,7 +111,7 @@ def main():
             checkpoint_path=args.checkpoint_path)
     # load model from torchvision
     else:
-        model = eval(f"torchvision.models.{args.model}(weights='{args.weights}')")
+        model = create_model(args.model, args.weights)
         # change classifier head
         last_layer_name = list(model.named_children())[-1][0]
         layer = getattr(model, last_layer_name)
@@ -150,12 +138,13 @@ def main():
     # Change criterion if required
     criterion = nn.CrossEntropyLoss()
     optimizer = args.optimizer(model.parameters(), lr=float(args.lr))
-    for epoch in range(args.epochs):
-        model, losses, scores = trainer(model, device, train_dataloader, criterion, optimizer, epoch)
-        val_loss, val_score = validation(model, device, val_dataloader, criterion, optimizer, epoch)
+    try:
+        for epoch in range(args.epochs):
+            model, losses, scores = trainer(model, device, train_dataloader, criterion, optimizer, epoch)
+            val_loss, val_score = validation(model, device, val_dataloader, criterion, optimizer, epoch, save=args.save)
 
-        # if args.save:
-        #     pass
+    except KeyboardInterrupt:
+        pass
 
 if __name__ == "__main__":
     main()
