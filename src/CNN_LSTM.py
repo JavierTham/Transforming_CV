@@ -7,7 +7,7 @@ from torchvision.models import MobileNet_V2_Weights
 
 class CNNLSTM(nn.Module):
     """
-    Creates a CNN-LSTM model from pretrained MobileNetv2
+    Creates a CNN-LSTM model from pretrained backbone
     
     @params
     ---
@@ -15,7 +15,7 @@ class CNNLSTM(nn.Module):
     lstm_num_layers: number of layers for the lstm model
     """
     
-    def __init__(self, lstm_hidden_size, lstm_num_layers):
+    def __init__(self, lstm_hidden_size, lstm_num_layers, num_classes):
         super(CNNLSTM, self).__init__()
         # self.cnn = torchvision.models.mobilenet_v2(weights=MobileNet_V2_Weights.IMAGENET1K_V1).features
         # self.AvgPool2d = nn.AvgPool2d(7)
@@ -27,14 +27,12 @@ class CNNLSTM(nn.Module):
 
         self.lstm = nn.LSTM(
             384,
-            # 256, # for AlexNet
             lstm_hidden_size,
             lstm_num_layers,
             batch_first=True)
         self.fc1 = nn.Linear(384, 384)
         self.fc2 = nn.Linear(lstm_hidden_size, 512)
-        # 157 classes
-        self.fc3 = nn.Linear(512, 157)
+        self.fc3 = nn.Linear(512, num_classes)
         self.dropout = nn.Dropout(0.2)
         
         # freeze entire CNN
@@ -58,10 +56,10 @@ class CNNLSTM(nn.Module):
         for i in range(L):
             #input one frame at a time into the basemodel
             x_t = self.cnn(x[:, i, :, :, :])
-            # x_t = self.AvgPool2d(x_t)
-
-            # Flatten the output
-            # x_t = x_t.view(x_t.size(0), -1)
+            # x_t = self.AvgPool2d(x_t)        #  for mobilenet-v2
+                                               #
+            # Flatten the output               #
+            # x_t = x_t.view(x_t.size(0), -1)  #
 
             #make a list of tensors for the given smaples 
             output.append(x_t)
