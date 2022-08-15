@@ -38,7 +38,7 @@ _*Torchvision has updated the way we load a pretrained model_
 
 Basic syntax for training a model
 ```python
-python train.py data_dir model num_classes [Optional]
+python train.py data_dir model num_classes [Options]
 ```
 
 Training script for pretrained timm models
