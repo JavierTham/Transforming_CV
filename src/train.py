@@ -18,8 +18,7 @@ from sklearn.model_selection import train_test_split
 from functions import trainer, validation
 from ImageDataset import *
 
-from pprint import pprint
-import wandb
+# import wandb
 
 parser = argparse.ArgumentParser(description='PyTorch classification model training')
 
