@@ -62,15 +62,16 @@ python train.py --help
 ```
 .
 ├── data
-│   ├── train
-│   │   ├── X.npy
-│   │   └── y.npy
-│   ├── validation
-│   │   ├── X.npy
-│   │   └── y.npy 
-│   └── test
-│       ├── X.npy
-│       └── y.npy
+│   └── cifar100
+│       ├── train
+│       │   ├── X.npy
+│       │   └── y.npy
+│       ├── validation
+│       │   ├── X.npy
+│       │   └── y.npy 
+│       └── test
+│           ├── X.npy
+│           └── y.npy
 └── src
     ├── train.py
     └── validate.py
