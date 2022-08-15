@@ -41,12 +41,12 @@ Basic syntax for training a model
 python train.py data_dir model num_classes [Optional]
 ```
 
-Training script for timm models
+Training script for pretrained timm models
 ```python
 python train.py ../data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 20 --workers 4 --pin-mem
 ```
 
-Training script for torchvision models (copy string for weights directly from the official docs)
+Training script for pretrained torchvision models (copy string for weights directly from the official docs)
 ```python
 python train.py ../data/cifar100 resnet50 100 --weights ResNet50_Weights.IMAGENET1K_V1 --lr 0.0001 --workers 4 --pin-mem
 ```
