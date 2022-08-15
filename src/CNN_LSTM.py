@@ -30,7 +30,7 @@ class CNNLSTM(nn.Module):
             lstm_hidden_size,
             lstm_num_layers,
             batch_first=True)
-        self.fc1 = nn.Linear(384, 384) # ensure in_feature same as LSTM out_feature
+        self.fc1 = nn.Linear(384, 384) # layer between feature extraction and lstm
         self.fc2 = nn.Linear(lstm_hidden_size, 512)
         self.fc3 = nn.Linear(512, num_classes)
         self.dropout = nn.Dropout(0.2)
