@@ -1,8 +1,12 @@
+import os
+
 import torch
 from torchvision import transforms
 from sklearn.metrics import accuracy_score
+
 import pickle
-import wandb
+
+# import wandb
 
 def trainer(
         model,
@@ -28,6 +32,7 @@ def trainer(
 
     for batch_idx, data in enumerate(train_loader):
         X, y = data
+        # y = y.type(torch.LongTensor)
         X, y = X.to(device), y.to(device)
         
         optimizer.zero_grad()
@@ -64,6 +69,7 @@ def validation(model, device, test_loader, criterion, optimizer, epoch, save=Tru
     with torch.no_grad():
         for batch_idx, data in enumerate(test_loader):
             X, y = data
+            # y = y.type(torch.LongTensor) #
             X, y = X.to(device), y.to(device)
 
             output = model(X)
@@ -78,8 +84,8 @@ def validation(model, device, test_loader, criterion, optimizer, epoch, save=Tru
 
             print(f"Validation batch {batch_idx} loss:", loss.item())
 
-            if (batch_idx + 1) % 10 == 0:
-                wandb.log({"Batch": batch_idx + 1, "Validation loss": loss.item()})
+            # if (batch_idx + 1) % 10 == 0:
+            #     wandb.log({"Batch": batch_idx + 1, "Validation loss": loss.item()})
 
     # average loss per batch
     test_loss /= len(test_loader)
@@ -96,8 +102,9 @@ def validation(model, device, test_loader, criterion, optimizer, epoch, save=Tru
     print(f'\nValidation set ({len(all_y)} samples): Average loss: {test_loss:.4f}, Accuracy: {100 * test_score:.2f}')
 
     if save:
-        torch.save(model.state_dict(), f'states/model_epoch{epoch + 1}.pth')
-        torch.save(optimizer.state_dict(), f'states/optimizer_epoch{epoch + 1}.pth')
+        save_dir = os.path.join("..", "states")
+        torch.save(model.state_dict(), os.path.join(save_dir, f"model_epoch{epoch+1}.pth"))
+        torch.save(optimizer.state_dict(), os.path.join(save_dir, f"optimizer_epoch{epoch + 1}.pth"))
         print(f"Epoch {epoch + 1} model saved!")
 
     # wandb.log({"Epoch": epoch, "Validation top 1 Accuracy": test_score})
