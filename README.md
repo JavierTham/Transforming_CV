@@ -11,7 +11,7 @@ pip install -r requirements.txt
 _remember to install CUDA for pytorch! https://pytorch.org/get-started/locally/_
 
 ## Train a model
-Models are loaded from the timm or torchvision library. Check out the list of available models
+Models are loaded from the timm or torchvision library.
 
 ### Search for available models
 
@@ -35,6 +35,11 @@ Check out their [docs](https://pytorch.org/vision/0.13/models.html) or [source c
 _*Torchvision has updated the way we load a pretrained model_
 
 <br>
+
+Basic syntax for training a model
+```python
+python train.py data_dir model num_classes [Optional]
+```
 
 Training script for timm models
 ```python
