@@ -64,7 +64,10 @@ python train.py --help
 ├── data
 │   ├── train
 │   │   ├── X.npy
-│   │   └── y.npy  
+│   │   └── y.npy
+│   ├── validation
+│   │   ├── X.npy
+│   │   └── y.npy 
 │   └── test
 │       ├── X.npy
 │       └── y.npy
