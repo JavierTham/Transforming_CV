@@ -13,7 +13,7 @@ class ImageDataset(Dataset):
 
     def __getitem__(self, idx):
         X = self.preprocess(Image.fromarray(self.X[idx].transpose(1,2,0)))
-        y = torch.tensor(self.y[idx])
+        y = torch.tensor(self.y[idx], dtype=torch.long)
         return X, y
     
     def __len__(self):
