@@ -1,10 +1,14 @@
 import pandas as pd
 import numpy as np
-import os
+
 import torch
-from CNN_LSTM import *
-import matplotlib.pyplot as plt
 from sklearn import preprocessing
+
+import matplotlib.pyplot as plt
+import os
+
+from CNN_LSTM import *
+from VideoDataset import *
 
 ### Charades ###
 # train_data_path = "../data/train_data2.csv"

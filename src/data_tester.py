@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import json
 from tqdm import tqdm
 
+'''for action recognition data only'''
+
 frames_path = "/media/kayne/SpareDisk/data/video_frames/"
 
 def test_data_class(path, video_id, video_class):

@@ -10,10 +10,11 @@ from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 import torch
 import torch.nn as nn
 import torchvision
+from torchvision import transforms
+from torchvision.transforms.functional import InterpolationMode
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
-from config.ViT_config import *
 from functions import trainer, validation
 from ImageDataset import *
 
@@ -63,9 +64,9 @@ group.add_argument("--save", default="store_true",
                     help="save state_dict for model and optimizer (saved in /states/{}_epoch_{}.pth")
 
 def parse_data(data_dir):
-
-    train_path = os.path.join(data_dir, "train")
-    val_path = os.path.join(data_dir, "validation")
+    path = data_dir.split("/")
+    train_path = os.path.join(*path, "train")
+    val_path = os.path.join(*path, "validation")
 
     X_train = np.load(os.path.join(train_path, "X.npy"))
     y_train = np.load(os.path.join(train_path, "y.npy"))
@@ -160,7 +161,6 @@ def main():
 
     except KeyboardInterrupt:
         pass
-
 
 if __name__ == "__main__":
     main()
