@@ -46,11 +46,14 @@ Training script for timm models
 python train.py ../data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 20 --workers 4 --pin-mem
 ```
 
-
 Training script for torchvision models (copy string for weights directly from the official docs)
 ```python
 python train.py ../data/cifar100 resnet50 100 --weights ResNet50_Weights.IMAGENET1K_V1 --lr 0.0001 --workers 4 --pin-mem
 ```
+
+**Training script trains the model and tests on the validation set in ../data/cifar100/validation (for eg.)**
+
+<br>
 
 for more help
 ```python
