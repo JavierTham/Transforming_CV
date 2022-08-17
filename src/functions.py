@@ -24,6 +24,7 @@ def trainer(
         criterion - criterion for loss function
         optimizer - optimizer to use for backprop
     """
+
     model.train()
     model.to(device)
     
@@ -32,7 +33,6 @@ def trainer(
 
     for batch_idx, data in enumerate(train_loader):
         X, y = data
-        # y = y.type(torch.LongTensor)
         X, y = X.to(device), y.to(device)
         
         optimizer.zero_grad()
@@ -60,22 +60,40 @@ def trainer(
 
     return model, losses, scores
 
-def validation(model, device, test_loader, criterion, optimizer, epoch, save=True):
+def validation(
+        model,
+        device,
+        val_loader,
+        criterion,
+        optimizer,
+        epoch,
+        save=True):
+    """validate the model
+    
+    Args:
+        model - model to train
+        device - cuda or cpu
+        val_loader (torch.utils.data.DataLoader) - DataLoader for validation data
+        criterion - criterion for loss function
+        optimizer - optimizer to use for backprop
+        epoch - current epoch (for logging purposes)
+        save - Save model state dictionaries
+    """
+
     model.eval()
 
-    test_loss = 0
+    val_loss = 0
     all_y = []
     all_y_pred = []
     with torch.no_grad():
-        for batch_idx, data in enumerate(test_loader):
+        for batch_idx, data in enumerate(val_loader):
             X, y = data
-            # y = y.type(torch.LongTensor) #
             X, y = X.to(device), y.to(device)
 
             output = model(X)
 
             loss = criterion(output, y)
-            test_loss += loss.item()                 
+            val_loss += loss.item()                 
             y_pred = torch.max(output, 1)[1]
 
             # collect all y and y_pred in all batches
@@ -88,7 +106,7 @@ def validation(model, device, test_loader, criterion, optimizer, epoch, save=Tru
             #     wandb.log({"Batch": batch_idx + 1, "Validation loss": loss.item()})
 
     # average loss per batch
-    test_loss /= len(test_loader)
+    val_loss /= len(val_loader)
 
     # compute accuracy
     all_y_true = torch.stack(all_y, dim=0)
@@ -99,17 +117,17 @@ def validation(model, device, test_loader, criterion, optimizer, epoch, save=Tru
     
     test_score = accuracy_score(all_y_true, all_y_pred)
 
-    print(f'\nValidation set ({len(all_y)} samples): Average loss: {test_loss:.4f}, Accuracy: {100 * test_score:.2f}')
+    print(f'\nValidation set ({len(all_y)} samples): Average Validation loss: {val_loss:.4f}, Accuracy: {100 * test_score:.2f}')
 
     if save:
         save_dir = os.path.join("..", "states")
         torch.save(model.state_dict(), os.path.join(save_dir, f"model_epoch{epoch+1}.pth"))
-        torch.save(optimizer.state_dict(), os.path.join(save_dir, f"optimizer_epoch{epoch + 1}.pth"))
-        print(f"Epoch {epoch + 1} model saved!")
+        torch.save(optimizer.state_dict(), os.path.join(save_dir, f"optimizer_epoch{epoch+1}.pth"))
+        print(f"Epoch {epoch+1} model saved!")
 
     # wandb.log({"Epoch": epoch, "Validation top 1 Accuracy": test_score})
 
-    return test_loss, test_score
+    return val_loss, test_score
 
 def predict(model, device, loader, show_pic=True):
     model.eval()
@@ -143,6 +161,7 @@ def unpickle(file, mode='rb', encoding="latin1"):
     return d
 
 def inv_normalize(img):
+    """'undo' normalization (standard imagenet preprocessing) of image for viewing"""
     inv = transforms.Normalize(
         mean=[-0.485/0.229, -0.456/0.224, -0.406/0.255],
         std=[1/0.229, 1/0.224, 1/0.255]
