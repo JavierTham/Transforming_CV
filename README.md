@@ -87,6 +87,16 @@ python train.py --help
 
 ## Validate model
 
+We can validate our trained model with saved 
+
+```python
+python validate.py data/cifar100 mobilevitv2_075 100 --timm --checkpoint-path states/model_epoch9.pth
+```
+
+```python
+python validate.py data/cifar100 mobilevitv2_075 100 
+```
+
 ## Further work
 
 
