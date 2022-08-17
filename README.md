@@ -75,9 +75,14 @@ python train.py --help
 │       └── test
 │           ├── X.npy
 │           └── y.npy
-└── src
-    ├── train.py
-    └── validate.py
+│
+├── output
+│   
+├── src
+│   ├── train.py
+│   └── validate.py
+│
+└── states
 ```
 
 ## Validate model
