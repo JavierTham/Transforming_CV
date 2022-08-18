@@ -87,14 +87,14 @@ python validate.py data/cifar100 resnet50 100 --checkpoint-path states/model_epo
 │       └── test
 │           ├── X.npy
 │           └── y.npy
-│
 ├── output
-│   
 ├── src
-│   ├── train.py
-│   └── validate.py
-│
-└── states
+│   ├── functions.py
+│   ├── ImageDataset.py
+│   └── ...
+├── states
+├── train.py
+└── validate.py
 ```
 
 
