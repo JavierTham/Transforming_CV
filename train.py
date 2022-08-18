@@ -14,9 +14,7 @@ from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
 from torch.utils.data import DataLoader
 
-from sklearn.metrics import accuracy_score
-
-from src.functions import predict
+from src.functions import trainer, validation
 from src.ImageDataset import *
 
 # import wandb
@@ -45,6 +43,16 @@ group.add_argument("--batch-size", default=64, type=int, metavar="int",
 group.add_argument("--checkpoint-path", default="", metavar="str",
                     help="path to model state dict")
 
+group = parser.add_argument_group("LR parameters")
+group.add_argument("--lr", default=0.001, metavar="float",
+                    help="learning rate (default:0.001)")
+group.add_argument("--epochs", default=10, type=int, metavar="int",
+                    help="number of epochs (default: 10)")
+
+group = parser.add_argument_group("Optimizer parameters")
+group.add_argument("--optimizer", default="Adam", metavar="str",
+                    help="optimizer (default: Adam)")
+
 group = parser.add_argument_group("Miscellaneous parameters")
 group.add_argument("--workers", default=0, type=int, metavar="int",
                     help="number of workers for dataloader")
@@ -55,12 +63,14 @@ group.add_argument("--save", default="store_true",
 
 def parse_data(data_dir):
     path = data_dir.split("/")
-    test_path = os.path.join(*path, "test")
+    train_path = os.path.join(*path, "train")
+    val_path = os.path.join(*path, "validation")
 
-    X_test = np.load(os.path.join(test_path, "X.npy"))
-    y_test = np.load(os.path.join(test_path, "y.npy"))
-    
-    return X_test, y_test
+    X_train = np.load(os.path.join(train_path, "X.npy"))
+    y_train = np.load(os.path.join(train_path, "y.npy"))
+    X_val = np.load(os.path.join(val_path, "X.npy"))
+    y_val = np.load(os.path.join(val_path, "y.npy"))
+    return X_train, X_val, y_train, y_val
 
 def get_in_features(layers):
     '''
@@ -74,10 +84,7 @@ def get_in_features(layers):
 
 def create_model(model_name, weights=None):
     '''Create (pretrained) torchvision models'''
-    if weights:
-        return eval(f"torchvision.models.{model_name}(weights='{weights}')")
-    else:
-        return eval(f"torchvision.models.{model_name}()")
+    return eval(f"torchvision.models.{model_name}(weights='{weights}')")
 
 def main():
     args = parser.parse_args()
@@ -95,7 +102,7 @@ def main():
     # wandb.init(**log_params)
     # wandb.config = config
 
-    X_test, y_test = parse_data(args.data_dir)
+    X_train, X_val, y_train, y_val = parse_data(args.data_dir)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -118,10 +125,6 @@ def main():
             in_features = get_in_features(layer.children())
         setattr(model, last_layer_name, nn.Linear(in_features, int(args.num_classes)))
 
-        if args.checkpoint_path:
-            state_dict = torch.load(args.checkpoint_path)
-            model.load_state_dict(state_dict)
-            
     model.to(device)
 
     # change preprocessing for image if required
@@ -139,16 +142,21 @@ def main():
         "shuffle": True}
 
     # change custom Dataset class if required
-    test_dataset = ImageDataset(X_test, y_test, preprocess)
-    test_dataloader = DataLoader(test_dataset, **params)
+    train_dataset = ImageDataset(X_train, y_train, preprocess)
+    train_dataloader = DataLoader(train_dataset, **params)
+    val_dataset = ImageDataset(X_val, y_val, preprocess)
+    val_dataloader = DataLoader(val_dataset, **params)
 
+    # Change criterion if required
+    criterion = nn.CrossEntropyLoss()
+
+    optimizer = eval(f"torch.optim.{args.optimizer}")
+    optimizer = optimizer(model.parameters(), lr=float(args.lr))
     try:
-        all_y_true, all_y_pred = predict(model, device, test_dataloader)
-        output_path = "output"
-        torch.save(all_y_true, os.path.join(output_path, "all_y_true.pt"))
-        torch.save(all_y_pred, os.path.join(output_path, "all_y_pred.pt"))
-        score = accuracy_score(all_y_true, all_y_pred)
-        print("score:", score)
+        for epoch in range(args.epochs):
+            model, losses, scores = trainer(model, device, train_dataloader, criterion, optimizer, epoch)
+            val_loss, val_score = validation(model, device, val_dataloader, criterion, optimizer, epoch, save=args.save)
+
     except KeyboardInterrupt:
         pass
 
