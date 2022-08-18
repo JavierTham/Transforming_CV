@@ -97,19 +97,12 @@ python validate.py data/cifar100 resnet50 100 --checkpoint-path states/model_epo
 └── validate.py
 ```
 
-
-## Further work
-
-
 ## References
 Models are taken from [timm](https://github.com/rwightman/pytorch-image-models) and [torchvision](https://github.com/pytorch/vision)
 
 ## Useful links
 Repo of collated papers for vision transformer and attention
 https://github.com/cmhungsteve/Awesome-Transformer-Attention
-Slides for end of internship sharing
-https://docs.google.com/presentation/d/1XQah9hevMntm9siyRd8Et9lgOn_KtJW_CHlUsZ5DlZM/edit?usp=sharing
 
-
-# Using weights and biases
+# Weights and biases
 [Weights & Biases](https://wandb.ai/site) is a free (for personal use) MLOps platform that can be integrated easily with pytorch/tensorflow/keras/fastai and other frameworks easily
