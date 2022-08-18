@@ -1,0 +1,7 @@
+*.ipynb*
+
+states/**
+
+__pycache__
+
+.vscode
