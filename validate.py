@@ -130,6 +130,11 @@ def main():
         torch.save(all_y_pred, os.path.join(output_path, "all_y_pred.pt"))
         score = accuracy_score(all_y_true, all_y_pred)
         print("score:", score)
+
+        # log score
+        # wandb.init(project="Transforming_CV", entity="javiertham", group="cifar", **{"name": f"{model}"})
+        # wandb.log({"Test Accuracy": score})
+        
     except KeyboardInterrupt:
         pass
 
