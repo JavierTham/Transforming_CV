@@ -1,6 +1,8 @@
 import os
 
 import torch
+import torch.nn as nn
+import torchvision
 from torchvision import transforms
 from sklearn.metrics import accuracy_score
 
@@ -122,8 +124,8 @@ def validation(
 
     if save:
         save_dir = os.path.join("states")
-        torch.save(model.state_dict(), os.path.join(save_dir, f"model_epoch{epoch+1}.pth"))
-        torch.save(optimizer.state_dict(), os.path.join(save_dir, f"optimizer_epoch{epoch+1}.pth"))
+        torch.save(model.state_dict(), os.path.join(save_dir, f"model_epoch{epoch+1}.pt"))
+        torch.save(optimizer.state_dict(), os.path.join(save_dir, f"optimizer_epoch{epoch+1}.pt"))
         print(f"Epoch {epoch+1} model saved!")
 
     # wandb.log({"Epoch": epoch, "Validation top 1 Accuracy": test_score})
@@ -163,3 +165,20 @@ def inv_normalize(img):
         std=[1/0.229, 1/0.224, 1/0.255]
     )
     return inv(img)
+
+def get_in_features(layers):
+    '''
+    returns the in_features attribute of the first linear layer
+    to change classifier head
+    '''
+    for layer in layers:
+        if isinstance(layer, nn.Linear):
+            return layer.in_features
+    raise Exception("No in_features found")
+
+def create_torch_model(model_name, weights=None):
+    '''Create (pretrained) torchvision models'''
+    if weights:
+        return eval(f"torchvision.models.{model_name}(weights='{weights}')")
+    else:
+        return eval(f"torchvision.models.{model_name}()")

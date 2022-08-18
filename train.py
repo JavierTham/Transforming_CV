@@ -14,7 +14,7 @@ from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
 from torch.utils.data import DataLoader
 
-from src.functions import trainer, validation
+from src.functions import trainer, validation, get_in_features, create_torch_model
 from src.ImageDataset import *
 
 # import wandb
@@ -59,7 +59,7 @@ group.add_argument("--workers", default=0, type=int, metavar="int",
 group.add_argument('--pin-mem', action='store_true', default=False,
                     help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
 group.add_argument("--save", default="store_true",
-                    help="save state_dict for model and optimizer (saved in /states/{}_epoch_{}.pth")
+                    help="save state_dict for model and optimizer (saved in states/{}_epoch_{}.pt")
 
 def parse_data(data_dir):
     path = data_dir.split("/")
@@ -71,20 +71,6 @@ def parse_data(data_dir):
     X_val = np.load(os.path.join(val_path, "X.npy"))
     y_val = np.load(os.path.join(val_path, "y.npy"))
     return X_train, X_val, y_train, y_val
-
-def get_in_features(layers):
-    '''
-    returns the in_features attribute of the first linear layer
-    to change classifier head
-    '''
-    for layer in layers:
-        if isinstance(layer, nn.Linear):
-            return layer.in_features
-    raise Exception("No in_features found")
-
-def create_model(model_name, weights=None):
-    '''Create (pretrained) torchvision models'''
-    return eval(f"torchvision.models.{model_name}(weights='{weights}')")
 
 def main():
     args = parser.parse_args()
@@ -115,7 +101,7 @@ def main():
             checkpoint_path=args.checkpoint_path)
     # load model from torchvision
     else:
-        model = create_model(args.model, args.weights)
+        model = create_torch_model(args.model, args.weights)
         # change classifier head
         last_layer_name = list(model.named_children())[-1][0]
         layer = getattr(model, last_layer_name)
@@ -124,6 +110,10 @@ def main():
         else:
             in_features = get_in_features(layer.children())
         setattr(model, last_layer_name, nn.Linear(in_features, int(args.num_classes)))
+
+        if args.checkpoint_path:
+            state_dict = torch.load(args.checkpoint_path)
+            model.load_state_dict(state_dict)
 
     model.to(device)
 
