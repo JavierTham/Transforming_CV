@@ -5,6 +5,7 @@ from torchvision import transforms
 from sklearn.metrics import accuracy_score
 
 import pickle
+from tqdm import tqdm 
 
 # import wandb
 
@@ -120,7 +121,7 @@ def validation(
     print(f'\nValidation set ({len(all_y)} samples): Average Validation loss: {val_loss:.4f}, Accuracy: {100 * test_score:.2f}')
 
     if save:
-        save_dir = os.path.join("..", "states")
+        save_dir = os.path.join("states")
         torch.save(model.state_dict(), os.path.join(save_dir, f"model_epoch{epoch+1}.pth"))
         torch.save(optimizer.state_dict(), os.path.join(save_dir, f"optimizer_epoch{epoch+1}.pth"))
         print(f"Epoch {epoch+1} model saved!")
@@ -129,31 +130,26 @@ def validation(
 
     return val_loss, test_score
 
-def predict(model, device, loader, show_pic=True):
+def predict(
+        model,
+        device,
+        loader):
     model.eval()
 
-    X_examples = []
-    y_pred_examples = []
-    y_true_examples = []
     all_y = []
     all_y_pred = []
     with torch.no_grad():
-        for batch_idx, (X, y) in enumerate(loader):
+        for batch_idx, (X, y) in enumerate(tqdm(loader)):
             X = X.to(device)
+            
             output = model(X)
             y_pred = output.max(1, keepdim=True)[1]  # location of max log-probability as prediction
             all_y.extend(y)
             all_y_pred.extend(y_pred.cpu().data.squeeze().numpy().tolist())
-            
-            if show_pic:
-                # show first example from each batch
-                X_examples.append(X[0].cpu())
-                y_pred_examples.append(y_pred[0].cpu())
-                y_true_examples.append(y[0])
 
         all_y_true = torch.stack(all_y, dim=0)
 
-    return X_examples, all_y_true, all_y_pred, y_true_examples, y_pred_examples
+    return all_y_true, all_y_pred
 
 def unpickle(file, mode='rb', encoding="latin1"):
     with open(file, mode) as fo:
