@@ -51,7 +51,7 @@ Training script for pretrained torchvision models (copy string for weights direc
 python train.py data/cifar100 resnet50 100 --weights ResNet50_Weights.IMAGENET1K_V1 --lr 0.0001 --workers 4 --pin-mem
 ```
 
-**Training script trains the model and tests on the validation set in ../data/cifar100/validation (for eg.)**
+**Training script trains the model and tests on the validation set in data/cifar100/validation (for eg.)**
 
 <br>
 
