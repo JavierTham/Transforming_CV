@@ -11,7 +11,7 @@ pip install -r requirements.txt
 _remember to install CUDA for pytorch! https://pytorch.org/get-started/locally/_
 
 ## Train a model
-Models are loaded from the timm or torchvision library. Check out the list of available models
+Models are loaded from the timm or torchvision library.
 
 ### Search for available models
 
@@ -36,20 +36,40 @@ _*Torchvision has updated the way we load a pretrained model_
 
 <br>
 
-Training script for timm models
+Basic syntax for training a model
 ```python
-python train.py ../data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 20 --workers 4 --pin-mem
+python train.py data_dir model num_classes [Options]
 ```
 
-
-Training script for torchvision models (copy string for weights directly from the official docs)
+Training script for pretrained timm models
 ```python
-python train.py ../data/cifar100 resnet50 100 --weights ResNet50_Weights.IMAGENET1K_V1 --lr 0.0001 --workers 4 --pin-mem
+python train.py data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 20 --workers 4 --pin-mem
 ```
+
+Training script for pretrained torchvision models (copy string for weights directly from the official docs)
+```python
+python train.py data/cifar100 resnet50 100 --weights ResNet50_Weights.IMAGENET1K_V1 --lr 0.0001 --workers 4 --pin-mem
+```
+
+**Training script trains the model and tests on the validation set in data/cifar100/validation (for eg.)**
+
+<br>
 
 for more help
 ```python
 python train.py --help
+```
+
+## Validate model
+
+We can validate our trained model with saved 
+
+```python
+python validate.py data/cifar100 mobilevitv2_075 100 --timm --checkpoint-path states/model_epoch9.pt
+```
+
+```python
+python validate.py data/cifar100 resnet50 100 --checkpoint-path states/model_epoch5.pt
 ```
 
 ## Directory structure
@@ -57,18 +77,26 @@ python train.py --help
 ```
 .
 ├── data
-│   ├── train
-│   │   ├── X.npy
-│   │   └── y.npy  
-│   └── test
-│       ├── X.npy
-│       └── y.npy
-└── src
-    ├── train.py
-    └── validate.py
+│   └── cifar100
+│       ├── train
+│       │   ├── X.npy
+│       │   └── y.npy
+│       ├── validation
+│       │   ├── X.npy
+│       │   └── y.npy 
+│       └── test
+│           ├── X.npy
+│           └── y.npy
+│
+├── output
+│   
+├── src
+│   ├── train.py
+│   └── validate.py
+│
+└── states
 ```
 
-## Validate model
 
 ## Further work
 
