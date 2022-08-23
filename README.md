@@ -9,7 +9,9 @@ conda env create -f environment.yml
 conda activate transforming_cv
 ```
 
-_remember to install CUDA for pytorch! https://pytorch.org/get-started/locally/_
+_Use conda environments as it is easier to download required cuda dependencies for pytorch_
+
+_if using venv, remember to install CUDA for pytorch! https://pytorch.org/get-started/locally/_
 
 ## Train a model
 Models are loaded from the timm or torchvision library.
@@ -44,12 +46,12 @@ python train.py data_dir model num_classes [OPTIONS]
 
 Training script for pretrained timm models
 ```python
-python train.py data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 20 --workers 4 --pin-mem
+python train.py data/cifar100 mobilevitv2_075 100 --timm --pretrained --epochs 20 --workers 4 --pin-mem --batch-size 32
 ```
 
 Training script for pretrained torchvision models (copy string for weights directly from the official docs)
 ```python
-python train.py data/cifar100 resnet50 100 --weights ResNet50_Weights.IMAGENET1K_V1 --lr 0.0001 --workers 4 --pin-mem
+python train.py data/cifar100 resnet50 100 --weights ResNet50_Weights.IMAGENET1K_V1 --lr 0.0001 --workers 4 --pin-mem --batch-size 32
 ```
 
 **Training script trains the model and tests on the validation set in data/cifar100/validation (for eg.)**
@@ -107,3 +109,6 @@ https://github.com/cmhungsteve/Awesome-Transformer-Attention
 
 # Weights and biases
 [Weights & Biases](https://wandb.ai/site) is a free (for personal use) MLOps platform that can be integrated easily with pytorch/tensorflow/keras/fastai and other frameworks easily
+
+### Further work
+Create corresponding docker image
