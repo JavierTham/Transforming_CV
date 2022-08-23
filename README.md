@@ -5,7 +5,8 @@
 ```python
 git clone https://github.com/JavierTham/Transforming_CV.git
 cd Transforming_CV
-pip install -r requirements.txt 
+conda env create -f environment.yml
+conda activate transforming_cv
 ```
 
 _remember to install CUDA for pytorch! https://pytorch.org/get-started/locally/_
