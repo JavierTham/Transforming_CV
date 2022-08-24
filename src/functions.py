@@ -70,7 +70,8 @@ def validation(
         criterion,
         optimizer,
         epoch,
-        save=True):
+        save=True,
+        model_name=""):
     """validate the model
     
     Args:
@@ -81,6 +82,7 @@ def validation(
         optimizer - optimizer to use for backprop
         epoch - current epoch (for logging purposes)
         save - Save model state dictionaries
+        model_name - Model name used for saving state dict
     """
 
     model.eval()
@@ -124,8 +126,8 @@ def validation(
 
     if save:
         save_dir = os.path.join("states")
-        torch.save(model.state_dict(), os.path.join(save_dir, f"model_epoch{epoch+1}.pt"))
-        torch.save(optimizer.state_dict(), os.path.join(save_dir, f"optimizer_epoch{epoch+1}.pt"))
+        torch.save(model.state_dict(), os.path.join(save_dir, f"{model_name}_epoch{epoch+1}.pt"))
+        torch.save(optimizer.state_dict(), os.path.join(save_dir, f"{model_name}_optimizer_epoch{epoch+1}.pt"))
         print(f"Epoch {epoch+1} model saved!")
 
     # wandb.log({"Epoch": epoch, "Validation top 1 Accuracy": test_score})
