@@ -145,7 +145,8 @@ def main():
     try:
         for epoch in range(args.epochs):
             model, losses, scores = trainer(model, device, train_dataloader, criterion, optimizer, epoch)
-            val_loss, val_score = validation(model, device, val_dataloader, criterion, optimizer, epoch, save=args.save)
+            val_loss, val_score = validation(model, device, val_dataloader, criterion, optimizer, epoch,
+                                            save=args.save, model_name=args.model)
 
     except KeyboardInterrupt:
         pass
